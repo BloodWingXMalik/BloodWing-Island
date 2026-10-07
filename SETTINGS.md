@@ -22,7 +22,7 @@ Edit `settings.json` with any text editor while Nectar is running. Changes are a
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | `nectar-dock-enabled` | `"true"` / `"false"` | `"true"` | Show or hide the Nectar Dock (taskbar replacement). |
-| `nectar-dock-mode` | `"fixed"` / `"smart"` / `"peek"` | `"fixed"` | Dock visibility behavior. **fixed** = always visible as AppBar. **smart** = auto-hide when overlapped by another window or a fullscreen app. **peek** = hidden until cursor approaches bottom edge. Smart/peek still reveal on hover and are clickable even over a fullscreen app — only a thin pre-emptive strip right at the screen edge stays click-through, so other apps' own edge-hugging UI (e.g. a Snipping Tool selection) is never intercepted. |
+| `nectar-dock-mode` | `"fixed"` / `"smart"` / `"peek"` | `"smart"` | Dock visibility behavior. **fixed** = always visible as AppBar. **smart** = auto-hide when overlapped by another window or a fullscreen app. **peek** = hidden until cursor approaches bottom edge. Smart/peek still reveal on hover and are clickable even over a fullscreen app — only a thin pre-emptive strip right at the screen edge stays click-through, so other apps' own edge-hugging UI (e.g. a Snipping Tool selection) is never intercepted. |
 | `nectar-dock-preview-enabled` | `"true"` / `"false"` | `"true"` | Show window thumbnail previews when hovering dock icons. |
 | `nectar-dock-search-enabled` | `"true"` / `"false"` | `"true"` | Show a search icon next to Start that opens Windows Search (Win+S). |
 | `nectar-dock-calendar-enabled` | `"true"` / `"false"` | `"true"` | Show a calendar icon next to the search icon that opens the Calendar window. The Calendar window is also in the dock's Nectar Options menu, the tray menu, and the notch calendar's open button. |
@@ -36,6 +36,7 @@ Edit `settings.json` with any text editor while Nectar is running. Changes are a
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| `nectar-notch-edge-delay` | number string (ms) | `"200"` | Smart and peek notch only. How long the cursor has to rest on the top edge before the notch peeks, so sweeping across a maximized window's tabs doesn't trigger it. `0` peeks instantly. Maximum `2000`. |
 | `nectar-notch-mode` | `"fixed"` / `"smart"` / `"peek"` | `"fixed"` | Notch (top bar) visibility behavior. **fixed** = always visible, never auto-hides (including over fullscreen apps — matches a real hardware notch, which doesn't disappear either). **smart** = hides when overlapped by another window/fullscreen app, reveals on hover. **peek** = hidden until cursor approaches the top edge, a media event, or a notification. Smart/peek reveal and are fully clickable on hover even over a fullscreen app (only a thin strip right at the screen edge stays click-through, so it never steals input meant for another app). Unlike the Dock, the notch never reserves desktop work-area space, so it never leaves a gap above maximized windows' content. |
 
 ### Monitors
@@ -50,6 +51,13 @@ The dock and the notch each choose their monitors separately. In Settings this i
 | `nectar-notch-monitor-id` | string | `""` | Windows display name of the monitor to use when the notch mode is `"specific"`. Set automatically when you pick a monitor in Settings. |
 
 If the chosen monitor is unplugged, Nectar falls back to the primary display.
+
+With **All Monitors** and more than one display, the **Per-Monitor Behavior** toggle on the Dock and Notch tabs gives each monitor its own Fixed / Smart / Peek. Turning it off goes back to one behavior for all of them.
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `nectar-dock-mode-by-monitor` | JSON string | `"{}"` | Per-monitor dock behavior: a JSON object mapping each Windows display name (as in `nectar-dock-monitor-id`) to `"fixed"`, `"smart"` or `"peek"`. A monitor without an entry uses `nectar-dock-mode`. |
+| `nectar-notch-mode-by-monitor` | JSON string | `"{}"` | Same as above for the notch, falling back to `nectar-notch-mode`. |
 
 ### Weather
 
@@ -89,7 +97,7 @@ Read-only sync of your calendars into the notch calendar. Open Settings › Notc
 | `nectar-caldav-username` | string | `""` | Account username. |
 | `nectar-caldav-interval` | number string | `"15"` | Minutes between background syncs. Minimum `5`. |
 
-`nectar-caldav-interval` applies to every source, links included.
+`nectar-caldav-interval` applies to every source, links included. After Nectar restarts or crashes it syncs right away instead of waiting out the interval, and retries a few times if the network isn't back yet.
 
 Secrets are **not** in `settings.json`. The CalDAV app password lives in Windows Credential Manager as `Nectar CalDAV`, and each calendar link (which acts like a password, since anyone holding it can read the calendar) lives there as `Nectar Calendar Link`. Everything else is local to the app config directory:
 

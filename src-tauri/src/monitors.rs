@@ -80,7 +80,9 @@ fn mode_setting_keys(kind: WindowKind) -> (&'static str, &'static str) {
 pub fn resolve_mode_for_label(app: &AppHandle, kind: WindowKind, label: &str) -> String {
     let (default_key, map_key) = mode_setting_keys(kind);
     let normalize = |m: String| if m == "auto-hide" { "smart".to_string() } else { m };
-    let default_mode = normalize(get_setting_str(app, default_key).unwrap_or_else(|| "fixed".to_string()));
+    // Fresh installs: smart dock, fixed notch.
+    let fallback = if matches!(kind, WindowKind::Dock) { "smart" } else { "fixed" };
+    let default_mode = normalize(get_setting_str(app, default_key).unwrap_or_else(|| fallback.to_string()));
 
     let Some(monitor) = monitor_for_window_label(app, kind, label) else { return default_mode };
     let Some(monitor_id) = monitor.name().cloned() else { return default_mode };
