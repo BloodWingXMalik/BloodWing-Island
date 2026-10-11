@@ -13,10 +13,10 @@
 
 <br />
 
-[![Latest release](https://img.shields.io/github/v/release/kua8/Nectar?style=flat-square&color=2f81f7)](https://github.com/kua8/Nectar/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/kua8/Nectar/total?style=flat-square&color=2f81f7)](https://github.com/kua8/Nectar/releases)
-[![License](https://img.shields.io/github/license/kua8/Nectar?style=flat-square&color=2f81f7)](LICENSE)
-![Platform](https://img.shields.io/badge/platform-Windows-2f81f7?style=flat-square)
+[![Latest release](https://shieldcn.dev/github/release/kua8/Nectar.svg?logo=lu:Tag)](https://github.com/kua8/Nectar/releases/latest)
+[![Downloads](https://shieldcn.dev/github/downloads/kua8/Nectar.svg?logo=lu:Download)](https://github.com/kua8/Nectar/releases)
+[![License](https://shieldcn.dev/github/license/kua8/Nectar.svg?logo=lu:Scale)](LICENSE)
+![Platform](https://shieldcn.dev/badge/platform-Windows.svg?logo=ri:FaWindows)
 
 [**Download**](https://github.com/kua8/Nectar/releases/latest) &nbsp;·&nbsp; [Features](#features) &nbsp;·&nbsp; [Multiple monitors](#multiple-monitors) &nbsp;·&nbsp; [Settings](SETTINGS.md) &nbsp;·&nbsp; [Build from source](#build-from-source)
 
