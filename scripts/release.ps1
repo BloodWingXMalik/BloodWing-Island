@@ -1,6 +1,7 @@
 param(
     [Parameter(Mandatory = $true)][string]$Version,
     [switch]$DryRun,
+    [switch]$Prerelease,
     [string]$NotesFile
 )
 
@@ -130,7 +131,11 @@ if ($exists) {
     Invoke-Step "Creating draft release $tag" {
         gh release create $tag --repo $repo --target $sha --title "Nectar $tag" --notes-file (Join-Path $out "notes.md") --draft @assets
     }
-    Invoke-Step "Publishing $tag" { gh release edit $tag --repo $repo --draft=false --latest }
+    if ($Prerelease) {
+        Invoke-Step "Publishing $tag as a pre-release" { gh release edit $tag --repo $repo --draft=false --prerelease }
+    } else {
+        Invoke-Step "Publishing $tag" { gh release edit $tag --repo $repo --draft=false --latest }
+    }
 }
 
 Write-Host "`nReleased https://github.com/$repo/releases/tag/$tag" -ForegroundColor Green

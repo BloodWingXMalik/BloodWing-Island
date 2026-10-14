@@ -2367,6 +2367,7 @@ pub fn trigger_app_scan() {
                                                 hwnd: None,
                                                 executable,
                                                 all_hwnds: None,
+                                                args: None,
                                             });
                                         }
                                         if !abs_item.is_null() { CoTaskMemFree(Some(abs_item as *const _)); }
@@ -2469,6 +2470,7 @@ fn collect_shortcuts(dir: &std::path::Path, apps: &mut Vec<AppInfo>, depth: i32)
                         hwnd: None,
                         executable,
                         all_hwnds: None,
+                        args: None,
                     });
                 }
             }
@@ -2832,6 +2834,7 @@ pub unsafe extern "system" fn enum_windows_proc(hwnd: HWND, lparam: LPARAM) -> B
                             hwnd: Some(hwnd.0 as isize),
                             executable: exe_name,
                             all_hwnds: None,
+                            args: None,
                         });
                     }
                 }

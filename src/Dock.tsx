@@ -16,6 +16,7 @@ interface AppInfo {
   hwnd?: number;
   executable?: string;
   all_hwnds?: [number, string][];
+  args?: string;
 }
 
 // Browser hosts (Edge/Chrome/Brave/ApplicationFrameHost) run every PWA/UWP window, so the
@@ -436,6 +437,10 @@ const Dock = memo(function Dock() {
       window.location.reload();
     });
 
+    const unlistenIconCache = listen("icon-cache-cleared", () => {
+      window.location.reload();
+    });
+
     // Safety net: even if a window event is missed, converge on the real state
     const interval = setInterval(poll, 10000);
 
@@ -443,6 +448,7 @@ const Dock = memo(function Dock() {
       clearInterval(interval);
       unlistenWindowChange.then(f => f());
       unlistenSettingsReset.then(f => f());
+      unlistenIconCache.then(f => f());
     };
   }, [isDragging]);
 
@@ -554,7 +560,7 @@ const Dock = memo(function Dock() {
       } else if (app.hwnd) {
         await invoke('focus_window', { hwnd: app.hwnd });
       } else {
-        await invoke('open_app', { appName: app.path });
+        await invoke('open_app', { appName: app.path, args: app.args ?? null });
       }
     } catch (e) {
       console.error(`Failed to interact with ${app.name}:`, e);
@@ -564,7 +570,7 @@ const Dock = memo(function Dock() {
   const handleNewInstance = async (app: AppInfo) => {
     if (!app || app.path === 'start') return;
     try {
-      await invoke('launch_new_instance', { appPath: app.path, appName: app.name });
+      await invoke('launch_new_instance', { appPath: app.path, appName: app.name, args: app.args ?? null });
     } catch (e) {
       console.error(`Failed to launch a new instance of ${app.name}:`, e);
     }

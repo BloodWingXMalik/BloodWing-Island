@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { Download, RefreshCw, FileDown, Upload, RotateCcw, Trash2, ClipboardCopy, FolderOpen, Crosshair } from "lucide-react";
+import { Download, RefreshCw, FileDown, Upload, RotateCcw, Trash2, ClipboardCopy, FolderOpen, Crosshair, Image as ImageIcon } from "lucide-react";
 import { SettingRow } from "./SettingRow";
 
 interface AboutTabProps {
@@ -42,6 +42,7 @@ export function AboutTab({
 }: AboutTabProps) {
   const [diagStatus, setDiagStatus] = useState<"idle" | "working" | "copied" | "error">("idle");
   const [hitboxLogging, setHitboxLogging] = useState(false);
+  const [iconStatus, setIconStatus] = useState<"idle" | "working" | "done" | "error">("idle");
 
   useEffect(() => {
     invoke<boolean>("get_hitbox_logging").then(setHitboxLogging).catch(() => {});
@@ -57,6 +58,24 @@ export function AboutTab({
       setDiagStatus("error");
     }
     setTimeout(() => setDiagStatus("idle"), 2500);
+  };
+
+  const refreshIconCache = async () => {
+    setIconStatus("working");
+    try {
+      await invoke("clear_icon_cache");
+      setIconStatus("done");
+    } catch {
+      setIconStatus("error");
+    }
+    setTimeout(() => setIconStatus("idle"), 2500);
+  };
+
+  const getIconCacheLabel = () => {
+    if (iconStatus === "working") return "Refreshing...";
+    if (iconStatus === "done") return "Icons refreshed!";
+    if (iconStatus === "error") return "Couldn't refresh icons";
+    return "Refresh App Icons";
   };
 
   const toggleHitboxLogging = () => {
@@ -190,6 +209,13 @@ export function AboutTab({
       <div className="setting-group">
         <SettingRow icon={FileDown} label={getExportLabel()} desc="Save settings to a file" action onClick={handleExportSettings} />
         <SettingRow icon={Upload} label={getImportLabel()} desc="Load settings from a file" action onClick={handleImportSettings} />
+        <SettingRow
+          icon={ImageIcon}
+          label={getIconCacheLabel()}
+          desc="Re-read app icons if one looks wrong or missing"
+          action
+          onClick={refreshIconCache}
+        />
         <SettingRow
           icon={RotateCcw}
           label={getResetLabel()}

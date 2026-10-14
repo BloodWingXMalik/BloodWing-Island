@@ -118,20 +118,22 @@ pub fn read_pins() -> Option<Vec<AppInfo>> {
         let name = lnk.file_stem().map(|s| s.to_string_lossy().to_string()).unwrap_or_default();
         let lnk_str = lnk.to_string_lossy().to_string();
 
-        let (path, executable) = if let Some((target, args)) = resolve_shortcut(&lnk_str) {
+        let (path, executable, args) = if let Some((target, args)) = resolve_shortcut(&lnk_str) {
+            let relaunched = effective_target(&target, &args) != target;
             let target = effective_target(&target, &args);
             let exe = Path::new(&target).file_name().map(|s| s.to_string_lossy().to_string());
-            (target, exe)
+            let args = (!relaunched && !args.trim().is_empty()).then_some(args);
+            (target, exe, args)
         } else if is_explorer_pin(&lnk) {
             let windir = std::env::var("WINDIR").unwrap_or_else(|_| r"C:\Windows".to_string());
-            (format!(r"{}\explorer.exe", windir), Some("explorer.exe".to_string()))
+            (format!(r"{}\explorer.exe", windir), Some("explorer.exe".to_string()), None)
         } else if let Some(item) = unsafe { store_item_path(&lnk) } {
-            (item, None)
+            (item, None, None)
         } else {
             continue;
         };
 
-        apps.push(AppInfo { name, path, icon: None, is_running: false, hwnd: None, executable, all_hwnds: None });
+        apps.push(AppInfo { name, path, icon: None, is_running: false, hwnd: None, executable, all_hwnds: None, args });
     }
     Some(apps)
 }

@@ -485,7 +485,7 @@ fn toggle_start_menu() {
 }
 
 #[tauri::command]
-pub async fn open_app(app: AppHandle, app_name: String) {
+pub async fn open_app(app: AppHandle, app_name: String, args: Option<String>) {
     if app_name == "start" {
         toggle_start_menu();
         return;
@@ -517,19 +517,19 @@ pub async fn open_app(app: AppHandle, app_name: String) {
         return;
     }
 
-    tauri::async_runtime::spawn_blocking(move || launch_path(&app_name));
+    tauri::async_runtime::spawn_blocking(move || launch_path(&app_name, args.as_deref()));
 }
 
 /// Starts another instance of an app. Running PWAs go through their Start Menu
 /// shortcut so the new window belongs to the web app.
 #[tauri::command]
-pub async fn launch_new_instance(app_path: String, app_name: Option<String>) {
+pub async fn launch_new_instance(app_path: String, app_name: Option<String>, args: Option<String>) {
     tauri::async_runtime::spawn_blocking(move || {
         if app_path == "start" {
             return;
         }
         let target = pwa_launch_target(&app_path, app_name.as_deref()).unwrap_or(app_path);
-        launch_path(&target);
+        launch_path(&target, args.as_deref());
     });
 }
 
@@ -551,8 +551,34 @@ fn is_pwa_shortcut_for(app: &AppInfo, name: &str, host_exe: &str) -> bool {
         && app.executable.as_deref().is_some_and(|exe| exe.eq_ignore_ascii_case(host_exe))
 }
 
+fn pe_subsystem(path: &str) -> Option<u16> {
+    use std::io::{Read, Seek, SeekFrom};
+    let mut file = std::fs::File::open(path).ok()?;
+    let mut dos = [0u8; 64];
+    file.read_exact(&mut dos).ok()?;
+    let pe_offset = u32::from_le_bytes(dos[60..64].try_into().ok()?) as u64;
+    file.seek(SeekFrom::Start(pe_offset)).ok()?;
+    let mut header = [0u8; 24 + 70];
+    file.read_exact(&mut header).ok()?;
+    if &header[..4] != b"PE\0\0" {
+        return None;
+    }
+    Some(u16::from_le_bytes([header[24 + 68], header[24 + 69]]))
+}
+
+fn gui_launcher_for(path: &str) -> Option<String> {
+    let exe = std::path::Path::new(path);
+    if pe_subsystem(path)? != 3 {
+        return None;
+    }
+    let stem = exe.file_stem()?.to_str()?;
+    let twin = exe.parent()?.join(format!("run{}.exe", stem));
+    let twin_str = twin.to_str()?;
+    (twin.exists() && pe_subsystem(twin_str) == Some(2)).then(|| twin_str.to_string())
+}
+
 /// Opens a path, shortcut or shell app id through the shell.
-fn launch_path(path: &str) {
+fn launch_path(path: &str, args: Option<&str>) {
     unsafe {
         use windows::Win32::UI::Shell::ShellExecuteW;
         use windows::Win32::UI::WindowsAndMessaging::SW_SHOWNORMAL;
@@ -630,15 +656,26 @@ fn launch_path(path: &str) {
             }
         }
 
+        if let Some(twin) = gui_launcher_for(&final_path) {
+            final_path = twin;
+        }
+
         let wide_path: Vec<u16> = final_path.encode_utf16().chain(std::iter::once(0)).collect();
         let wide_open: Vec<u16> = "open".encode_utf16().chain(std::iter::once(0)).collect();
-        
+        let wide_args: Option<Vec<u16>> = args
+            .filter(|a| !a.trim().is_empty())
+            .map(|a| a.encode_utf16().chain(std::iter::once(0)).collect());
+        let wide_dir: Option<Vec<u16>> = Path::new(&final_path)
+            .parent()
+            .filter(|d| d.is_dir())
+            .map(|d| d.to_string_lossy().encode_utf16().chain(std::iter::once(0)).collect());
+
         let res = ShellExecuteW(
             None,
             windows::core::PCWSTR(wide_open.as_ptr()),
             windows::core::PCWSTR(wide_path.as_ptr()),
-            None,
-            None,
+            wide_args.as_ref().map_or(windows::core::PCWSTR::null(), |a| windows::core::PCWSTR(a.as_ptr())),
+            wide_dir.as_ref().map_or(windows::core::PCWSTR::null(), |d| windows::core::PCWSTR(d.as_ptr())),
             SW_SHOWNORMAL,
         );
         
@@ -1258,6 +1295,74 @@ pub fn schedule_icon_cache_save(app: AppHandle) {
     });
 }
 
+fn generic_exe_icon() -> Option<&'static str> {
+    use std::sync::OnceLock;
+    static GENERIC: OnceLock<Option<String>> = OnceLock::new();
+    GENERIC
+        .get_or_init(|| unsafe {
+            use windows::Win32::Storage::FileSystem::FILE_ATTRIBUTE_NORMAL;
+            use windows::Win32::System::Com::{CoInitializeEx, CoUninitialize, COINIT_MULTITHREADED};
+            use windows::Win32::UI::Shell::{SHGetFileInfoW, SHFILEINFOW, SHGFI_ICON, SHGFI_LARGEICON, SHGFI_USEFILEATTRIBUTES};
+            use windows::Win32::UI::WindowsAndMessaging::DestroyIcon;
+
+            let com = CoInitializeEx(None, COINIT_MULTITHREADED).is_ok();
+            let mut shfi: SHFILEINFOW = std::mem::zeroed();
+            let name: Vec<u16> = "placeholder.exe".encode_utf16().chain(std::iter::once(0)).collect();
+            let res = SHGetFileInfoW(
+                windows::core::PCWSTR(name.as_ptr()),
+                FILE_ATTRIBUTE_NORMAL,
+                Some(&mut shfi),
+                std::mem::size_of::<SHFILEINFOW>() as u32,
+                SHGFI_ICON | SHGFI_LARGEICON | SHGFI_USEFILEATTRIBUTES,
+            );
+            let icon = if res != 0 && !shfi.hIcon.is_invalid() {
+                let icon = icon_to_base64(shfi.hIcon);
+                let _ = DestroyIcon(shfi.hIcon);
+                icon
+            } else {
+                None
+            };
+            if com { CoUninitialize(); }
+            icon
+        })
+        .as_deref()
+}
+
+fn is_generic_icon(icon: &str) -> bool {
+    generic_exe_icon().is_some_and(|g| g == icon)
+}
+
+fn icon_from_exe_neighbourhood(exe: &str) -> Option<String> {
+    use windows::Win32::UI::Shell::ExtractIconExW;
+    use windows::Win32::UI::WindowsAndMessaging::{DestroyIcon, HICON};
+
+    let wide: Vec<u16> = exe.encode_utf16().chain(std::iter::once(0)).collect();
+    let mut large = HICON::default();
+    let extracted = unsafe { ExtractIconExW(windows::core::PCWSTR(wide.as_ptr()), 0, Some(&mut large), None, 1) };
+    if extracted > 0 && !large.is_invalid() {
+        let icon = unsafe { icon_to_base64(large) };
+        let _ = unsafe { DestroyIcon(large) };
+        if let Some(icon) = icon.filter(|i| !is_generic_icon(i)) {
+            return Some(icon);
+        }
+    }
+
+    let dir = std::path::Path::new(exe).parent()?;
+    let stem = std::path::Path::new(exe).file_stem()?.to_string_lossy().to_string();
+    let candidates = [
+        dir.join(format!("{}.ico", stem)),
+        dir.join("icon.ico"),
+        dir.join("app.ico"),
+        dir.parent()?.join(format!("{}.ico", stem)),
+        dir.parent()?.join("icon.ico"),
+    ];
+    candidates
+        .iter()
+        .filter(|p| p.is_file())
+        .find_map(|p| image_file_to_base64(&p.to_string_lossy()))
+        .filter(|i| !is_generic_icon(i))
+}
+
 #[tauri::command]
 pub async fn get_app_icon(app: AppHandle, path: String, name: Option<String>, hwnd: Option<isize>) -> Result<Option<String>, String> {
     let cache_dir = app.path().app_config_dir().map_err(|e| e.to_string())?;
@@ -1360,10 +1465,18 @@ pub async fn get_app_icon(app: AppHandle, path: String, name: Option<String>, hw
         }
     }
 
-    if let Ok(c) = cache.lock() {
-        if let Some(icon) = c.get(&cache_key) {
-            return Ok(Some(icon.clone()));
+    let cached = cache.lock().ok().and_then(|c| c.get(&cache_key).cloned());
+    if let Some(icon) = cached {
+        let stale = tauri::async_runtime::spawn_blocking({
+            let icon = icon.clone();
+            move || is_generic_icon(&icon)
+        })
+        .await
+        .unwrap_or(false);
+        if !stale {
+            return Ok(Some(icon));
         }
+        if let Ok(mut c) = cache.lock() { c.remove(&cache_key); }
     }
 
     // Resolve bare names (notepad.exe) first so Store packages get their own logo, not the System32 stub.
@@ -1533,8 +1646,11 @@ pub async fn get_app_icon(app: AppHandle, path: String, name: Option<String>, hw
             let res = SHGetFileInfoW(windows::core::PCWSTR(path_u16.as_ptr()), Default::default(), Some(&mut shfi), std::mem::size_of::<SHFILEINFOW>() as u32, SHGFI_ICON | SHGFI_LARGEICON);
 
             if res != 0 && !shfi.hIcon.is_invalid() {
-                let base64_icon = icon_to_base64(shfi.hIcon);
+                let mut base64_icon = icon_to_base64(shfi.hIcon);
                 let _ = DestroyIcon(shfi.hIcon);
+                if base64_icon.as_deref().is_some_and(is_generic_icon) {
+                    base64_icon = icon_from_exe_neighbourhood(&actual_path);
+                }
                 if let Some(ref base64) = base64_icon {
                     if let Ok(mut lock) = ICON_CACHE.get().unwrap().lock() { lock.insert(ck_clone, base64.clone()); }
                 }
@@ -1582,10 +1698,10 @@ pub async fn load_pinned_apps(app: AppHandle) -> Vec<AppInfo> {
     }
 
     vec![
-        AppInfo { name: "File Explorer".into(), path: "C:\\Windows\\explorer.exe".into(), icon: None, is_running: false, hwnd: None, executable: Some("explorer.exe".into()), all_hwnds: None },
-        AppInfo { name: "Microsoft Edge".into(), path: "msedge".into(), icon: None, is_running: false, hwnd: None, executable: Some("msedge.exe".into()), all_hwnds: None },
-        AppInfo { name: "Notepad".into(), path: "notepad.exe".into(), icon: None, is_running: false, hwnd: None, executable: Some("notepad.exe".into()), all_hwnds: None },
-        AppInfo { name: "Settings".into(), path: "nectar-settings".into(), icon: None, is_running: false, hwnd: None, executable: None, all_hwnds: None },
+        AppInfo { name: "File Explorer".into(), path: "C:\\Windows\\explorer.exe".into(), icon: None, is_running: false, hwnd: None, executable: Some("explorer.exe".into()), all_hwnds: None, args: None },
+        AppInfo { name: "Microsoft Edge".into(), path: "msedge".into(), icon: None, is_running: false, hwnd: None, executable: Some("msedge.exe".into()), all_hwnds: None, args: None },
+        AppInfo { name: "Notepad".into(), path: "notepad.exe".into(), icon: None, is_running: false, hwnd: None, executable: Some("notepad.exe".into()), all_hwnds: None, args: None },
+        AppInfo { name: "Settings".into(), path: "nectar-settings".into(), icon: None, is_running: false, hwnd: None, executable: None, all_hwnds: None, args: None },
     ]
 }
 
@@ -1609,6 +1725,7 @@ pub async fn clear_icon_cache(app: AppHandle) -> Result<(), String> {
             lock.clear();
         }
     }
+    let _ = app.emit("icon-cache-cleared", ());
     Ok(())
 }
 
@@ -3462,6 +3579,7 @@ mod pwa_icon_tests {
             hwnd: None,
             executable: Some("brave.exe".into()),
             all_hwnds: None,
+            args: None,
         };
         assert!(is_pwa_shortcut_for(&app, "youtube", "brave.exe"));
         assert!(is_pwa_shortcut_for(&app, "YouTube", "BRAVE.EXE"));
@@ -3486,6 +3604,7 @@ mod pwa_icon_tests {
                 hwnd: None,
                 executable: Some("brave.exe".into()),
                 all_hwnds: None,
+                args: None,
             },
             AppInfo {
                 name: "Netflix".into(),
@@ -3495,6 +3614,7 @@ mod pwa_icon_tests {
                 hwnd: None,
                 executable: Some("msedge.exe".into()),
                 all_hwnds: None,
+                args: None,
             },
         ]));
         assert_eq!(

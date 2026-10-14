@@ -46,8 +46,12 @@ fn find_show_hidden_icons_button(automation: &IUIAutomation, tray_root: &IUIAuto
         let all = tray_root.FindAll(TreeScope_Descendants, &condition).ok()?;
         for i in 0..all.Length().unwrap_or(0) {
             if let Ok(el) = all.GetElement(i) {
-                let name = el.CurrentName().map(|s| s.to_string()).unwrap_or_default();
-                if name.starts_with("Show Hidden Icons") {
+                let automation_id = el.CurrentAutomationId().map(|s| s.to_string()).unwrap_or_default();
+                if automation_id == "NotificationChevron" {
+                    return Some(el);
+                }
+                let name = el.CurrentName().map(|s| s.to_string().to_lowercase()).unwrap_or_default();
+                if name.contains("hidden icons") {
                     return Some(el);
                 }
             }
