@@ -19,6 +19,8 @@ import {
 import type { SettingsTab } from "./settings/index";
 import { initTheme } from "./theme";
 import "./Settings.css";
+import "./settings-theme.css";
+import { MotionProvider, initMotionPreference } from "./motion";
 
 const appWindow = getCurrentWebviewWindow();
 
@@ -69,8 +71,9 @@ function SettingsApp() {
   return (
     <div className="settings-container" style={{ zoom: settings.scale }}>
       <div className="title-bar" data-tauri-drag-region>
-        <span className="title-text" data-tauri-drag-region>
-          Settings
+        <span className="title-text bw-title-left" data-tauri-drag-region>
+          <span className="bw-brand-mark" aria-hidden="true" />
+          BloodWing Settings
         </span>
         <WindowControls />
       </div>
@@ -118,6 +121,10 @@ function SettingsApp() {
               handleSaturationChange={settings.handleSaturationChange}
               themeBrightness={settings.themeBrightness}
               handleBrightnessChange={settings.handleBrightnessChange}
+              reduceMotion={settings.reduceMotion}
+              handleReduceMotionChange={settings.handleReduceMotionChange}
+              motionIntensity={settings.motionIntensity}
+              handleMotionIntensityChange={settings.handleMotionIntensityChange}
               cornersEnabled={settings.cornersEnabled}
               toggleCorners={settings.toggleCorners}
               scale={settings.scale}
@@ -242,8 +249,13 @@ function SettingsApp() {
   );
 }
 
+// Apply the motion preference before the first paint to avoid a flash.
+initMotionPreference();
+
 createRoot(document.getElementById("root") as HTMLElement).render(
   <StrictMode>
-    <SettingsApp />
+    <MotionProvider>
+      <SettingsApp />
+    </MotionProvider>
   </StrictMode>
 );

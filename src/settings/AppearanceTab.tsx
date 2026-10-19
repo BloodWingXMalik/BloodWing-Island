@@ -1,6 +1,18 @@
-import { Palette, Droplet, Contrast, Droplets, Sun, Square, Maximize2 } from "lucide-react";
+import { Palette, Droplet, Contrast, Droplets, Sun, Square, Maximize2, Accessibility, Activity } from "lucide-react";
 import { SettingRow } from "./SettingRow";
 import { Dropdown } from "./Dropdown";
+
+// Curated accent colors for the BloodWing identity (first entry is the default).
+const ACCENT_PRESETS = [
+  { value: "#b51f2e", label: "Blood Red" },
+  { value: "#e5484d", label: "Crimson" },
+  { value: "#e07a2f", label: "Ember" },
+  { value: "#e3b341", label: "Amber" },
+  { value: "#3fb950", label: "Emerald" },
+  { value: "#2f81f7", label: "Azure" },
+  { value: "#8b5cf6", label: "Violet" },
+  { value: "#d946ef", label: "Magenta" },
+];
 
 interface AppearanceTabProps {
   themeMode: string;
@@ -13,6 +25,10 @@ interface AppearanceTabProps {
   handleSaturationChange: (val: number) => void;
   themeBrightness: number;
   handleBrightnessChange: (val: number) => void;
+  reduceMotion: string;
+  handleReduceMotionChange: (val: string) => void;
+  motionIntensity: string;
+  handleMotionIntensityChange: (val: string) => void;
   cornersEnabled: boolean;
   toggleCorners: () => void;
   scale: number;
@@ -30,6 +46,10 @@ export function AppearanceTab({
   handleSaturationChange,
   themeBrightness,
   handleBrightnessChange,
+  reduceMotion,
+  handleReduceMotionChange,
+  motionIntensity,
+  handleMotionIntensityChange,
   cornersEnabled,
   toggleCorners,
   scale,
@@ -37,6 +57,9 @@ export function AppearanceTab({
 }: AppearanceTabProps) {
   const showCustomColor = themeMode === "custom";
   const showAdvancedSliders = themeMode === "custom" || themeMode === "adaptive";
+  // The accent color is configurable in dark and light mode; custom mode uses
+  // the theme color for both background and accent, adaptive follows Windows.
+  const showAccentColor = themeMode === "dark" || themeMode === "light";
 
   return (
     <>
@@ -65,6 +88,32 @@ export function AppearanceTab({
                 className="color-picker-input"
               />
               <span className="color-picker-label">{themeColor.toUpperCase()}</span>
+            </div>
+          </SettingRow>
+        )}
+
+        {showAccentColor && (
+          <SettingRow icon={Droplet} label="Accent Color" desc="Highlight color used across the app">
+            <div className="bw-preset-row">
+              {ACCENT_PRESETS.map((preset) => (
+                <button
+                  key={preset.value}
+                  type="button"
+                  className={`bw-preset-swatch ${themeColor.toLowerCase() === preset.value ? "active" : ""}`}
+                  style={{ background: preset.value }}
+                  title={preset.label}
+                  aria-label={preset.label}
+                  onClick={() => handleThemeColorChange(preset.value)}
+                />
+              ))}
+              <input
+                type="color"
+                value={themeColor}
+                onChange={(e) => handleThemeColorChange(e.target.value)}
+                className="bw-preset-custom"
+                title="Custom accent color"
+                aria-label="Custom accent color"
+              />
             </div>
           </SettingRow>
         )}
@@ -158,6 +207,42 @@ export function AppearanceTab({
               +
             </button>
           </div>
+        </SettingRow>
+      </div>
+
+      <div className="setting-group-label setting-group-label--spaced">Motion</div>
+      <div className="setting-group">
+        <SettingRow
+          icon={Accessibility}
+          label="Reduce Motion"
+          desc="Windows animations, ambient glows and loops"
+        >
+          <Dropdown
+            value={reduceMotion}
+            onChange={handleReduceMotionChange}
+            options={[
+              { value: "system", label: "Follow Windows" },
+              { value: "on", label: "On" },
+              { value: "off", label: "Off" },
+            ]}
+          />
+        </SettingRow>
+
+        <SettingRow
+          icon={Activity}
+          label="Motion Intensity"
+          desc="How much decorative motion plays"
+          divider={false}
+        >
+          <Dropdown
+            value={motionIntensity}
+            onChange={handleMotionIntensityChange}
+            options={[
+              { value: "full", label: "Full" },
+              { value: "balanced", label: "Balanced" },
+              { value: "minimal", label: "Minimal" },
+            ]}
+          />
         </SettingRow>
       </div>
     </>

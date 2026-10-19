@@ -130,6 +130,13 @@ export function useSettings() {
     const val = localStorage.getItem("nectar-theme-brightness");
     return val !== null ? parseFloat(val) : 0.15;
   });
+  // BloodWing motion preferences (see src/motion.tsx)
+  const [reduceMotion, setReduceMotion] = useState(
+    () => localStorage.getItem("nectar-reduce-motion") || "system"
+  );
+  const [motionIntensity, setMotionIntensity] = useState(
+    () => localStorage.getItem("nectar-motion-intensity") || "full"
+  );
   const [exportStatus, setExportStatus] = useState<"idle" | "exporting" | "success" | "error">("idle");
   const [importStatus, setImportStatus] = useState<"idle" | "importing" | "success" | "error">("idle");
   const [resetStatus, setResetStatus] = useState<"idle" | "confirm" | "resetting">("idle");
@@ -206,6 +213,10 @@ export function useSettings() {
       apply(getVal("nectar-theme-opacity"), setThemeOpacity, parseFloat);
       apply(getVal("nectar-theme-saturation"), setThemeSaturation, parseFloat);
       apply(getVal("nectar-theme-brightness"), setThemeBrightness, parseFloat);
+      apply(getVal("nectar-reduce-motion"), setReduceMotion, (v) => (v === "on" || v === "off" ? v : "system"));
+      apply(getVal("nectar-motion-intensity"), setMotionIntensity, (v) =>
+        v === "balanced" || v === "minimal" ? v : "full"
+      );
 
       const widgetsVal = getVal("nectar-status-widgets");
       if (widgetsVal) {
@@ -294,6 +305,8 @@ export function useSettings() {
     "nectar-theme-opacity": setThemeOpacity,
     "nectar-theme-saturation": setThemeSaturation,
     "nectar-theme-brightness": setThemeBrightness,
+    "nectar-reduce-motion": setReduceMotion,
+    "nectar-motion-intensity": setMotionIntensity,
     "nectar-weather-city": (v) => setCityName(v || ""),
   });
 
@@ -703,6 +716,19 @@ export function useSettings() {
     saveSetting("nectar-theme-brightness", String(value));
   };
 
+  // ── Motion handlers (BloodWing) ──
+  const handleReduceMotionChange = (value: string) => {
+    const next = value === "on" || value === "off" ? value : "system";
+    setReduceMotion(next);
+    saveSetting("nectar-reduce-motion", next);
+  };
+
+  const handleMotionIntensityChange = (value: string) => {
+    const next = value === "balanced" || value === "minimal" ? value : "full";
+    setMotionIntensity(next);
+    saveSetting("nectar-motion-intensity", next);
+  };
+
   // ── City search ──
   const selectCity = async (city: {
     name: string;
@@ -851,6 +877,10 @@ export function useSettings() {
     handleSaturationChange,
     themeBrightness,
     handleBrightnessChange,
+    reduceMotion,
+    handleReduceMotionChange,
+    motionIntensity,
+    handleMotionIntensityChange,
 
     // Notch
     notchMode,

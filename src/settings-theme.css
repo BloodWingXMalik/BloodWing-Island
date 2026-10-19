@@ -1,0 +1,661 @@
+/* ============================================================================
+   BloodWing settings theme layer
+   ----------------------------------------------------------------------------
+   Loaded after src/Settings.css (see src/Settings.tsx). Restyles the settings
+   window only: shell, sidebar, groups, toggles, sliders, dropdowns and the
+   About/CalDAV/widget sections. No layout or logic is changed here.
+   ========================================================================== */
+
+@import "./bloodwing.css";
+
+:root {
+    --window-bg: rgba(11, 12, 15, 0.78);
+    --window-line: var(--bw-border);
+    --window-bar: rgba(255, 255, 255, 0.03);
+    --window-bar-line: var(--bw-hairline);
+    --window-title: var(--bw-text-muted);
+    --bg-color: var(--window-bg);
+}
+
+/* Light mode keeps its translucent paper look; only the brand accents change. */
+.light-mode {
+    --window-bg: rgba(248, 248, 250, 0.78);
+    --window-line: rgba(0, 0, 0, 0.1);
+    --window-bar: rgba(0, 0, 0, 0.02);
+    --window-bar-line: rgba(0, 0, 0, 0.06);
+    --window-title: rgba(0, 0, 0, 0.6);
+}
+
+body {
+    font-family: var(--bw-font);
+}
+
+/* ── Window shell ─────────────────────────────────────────────────────────── */
+
+.settings-container {
+    border-radius: 14px;
+    background:
+        var(--bw-accent-hairline) top center / 100% 1px no-repeat,
+        var(--bw-glass-sheen),
+        var(--bg-color);
+    border: 1px solid var(--window-line);
+    box-shadow:
+        var(--bw-inset-hairline),
+        0 18px 50px rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(28px) saturate(1.4);
+    -webkit-backdrop-filter: blur(28px) saturate(1.4);
+}
+
+.light-mode .settings-container {
+    background:
+        var(--bw-accent-hairline) top center / 100% 1px no-repeat,
+        var(--bw-glass-sheen),
+        var(--bg-color);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.85),
+        0 18px 50px rgba(0, 0, 0, 0.2);
+}
+
+.title-bar {
+    height: 38px;
+    background: var(--window-bar);
+    border-bottom: 1px solid var(--window-bar-line);
+}
+
+.title-text {
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-size: 11px;
+    color: var(--window-title);
+}
+
+/* Small brand mark next to the window title (see Settings.tsx). */
+.bw-brand-mark {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    margin-right: 8px;
+    background: radial-gradient(circle at 35% 30%, var(--bw-accent-hover) 0%, var(--bw-accent) 55%, var(--bw-accent-deep) 100%);
+    box-shadow: 0 0 8px rgba(181, 31, 46, 0.65);
+    flex-shrink: 0;
+}
+
+.title-bar .bw-title-left {
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+}
+
+.settings-body {
+    background: transparent;
+}
+
+/* ── Sidebar ──────────────────────────────────────────────────────────────── */
+
+.settings-sidebar {
+    background: rgba(255, 255, 255, 0.018);
+    border-right: 1px solid var(--nectar-border, var(--bw-border));
+}
+
+.light-mode .settings-sidebar {
+    background: rgba(0, 0, 0, 0.012);
+    border-right: 1px solid var(--nectar-border, rgba(0, 0, 0, 0.08));
+}
+
+.sidebar-tab {
+    position: relative;
+    border-radius: 9px;
+    color: var(--nectar-text, var(--bw-text));
+    opacity: 0.72;
+    transition:
+        background-color var(--bw-duration-fast) var(--bw-ease-standard),
+        color var(--bw-duration-fast) var(--bw-ease-standard),
+        opacity var(--bw-duration-fast) var(--bw-ease-standard);
+}
+
+.sidebar-tab:hover {
+    background: rgba(255, 255, 255, 0.045);
+    opacity: 1;
+}
+
+.sidebar-tab.active {
+    background: var(--bw-accent-soft);
+    color: var(--nectar-text, var(--bw-text));
+    opacity: 1;
+    box-shadow: inset 0 0 0 1px var(--bw-accent-line);
+}
+
+.sidebar-tab.active::before {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 16px;
+    border-radius: 3px;
+    background: var(--nectar-accent, var(--bw-accent));
+    box-shadow: 0 0 10px rgba(181, 31, 46, 0.55);
+}
+
+.sidebar-tab:active {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-tab-icon {
+    color: var(--bw-text-muted);
+}
+
+.sidebar-tab.active .sidebar-tab-icon,
+.sidebar-tab:hover .sidebar-tab-icon {
+    color: var(--nectar-text, var(--bw-text));
+}
+
+.light-mode .sidebar-tab:hover {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.light-mode .sidebar-tab.active {
+    background: var(--bw-accent-soft);
+    box-shadow: inset 0 0 0 1px var(--bw-accent-line);
+}
+
+.light-mode .sidebar-tab-icon {
+    color: rgba(0, 0, 0, 0.45);
+}
+
+.light-mode .sidebar-tab.active .sidebar-tab-icon,
+.light-mode .sidebar-tab:hover .sidebar-tab-icon {
+    color: rgba(0, 0, 0, 0.85);
+}
+
+/* ── Groups and rows ──────────────────────────────────────────────────────── */
+
+.setting-group-label {
+    letter-spacing: 0.07em;
+    color: var(--bw-text-faint);
+}
+
+.setting-group {
+    border-radius: 12px;
+    border: 1px solid var(--nectar-border, var(--bw-hairline));
+    background: var(--nectar-group-bg, rgba(255, 255, 255, 0.035));
+    box-shadow: var(--bw-inset-hairline);
+}
+
+.setting-divider {
+    background: var(--nectar-border, var(--bw-hairline));
+}
+
+.setting-icon-bg {
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--bw-text-muted);
+    transition:
+        background-color var(--bw-duration-fast) var(--bw-ease-standard),
+        color var(--bw-duration-fast) var(--bw-ease-standard);
+}
+
+.setting-item:hover .setting-icon-bg {
+    background: var(--bw-accent-soft);
+    color: var(--bw-accent-hover);
+}
+
+.light-mode .setting-icon-bg {
+    background: rgba(0, 0, 0, 0.045);
+    color: rgba(0, 0, 0, 0.45);
+}
+
+.light-mode .setting-item:hover .setting-icon-bg {
+    background: var(--bw-accent-soft);
+    color: var(--bw-accent);
+}
+
+.setting-label {
+    color: var(--nectar-text, var(--bw-text));
+}
+
+.setting-desc {
+    color: var(--nectar-text-muted, var(--bw-text-muted));
+    opacity: 1;
+}
+
+/* ── Toggle switch ────────────────────────────────────────────────────────── */
+
+.slider {
+    background-color: rgba(255, 255, 255, 0.14);
+    border: 1px solid var(--nectar-border, var(--bw-hairline));
+    transition:
+        background-color 200ms var(--bw-ease-standard),
+        border-color 200ms var(--bw-ease-standard),
+        box-shadow 200ms var(--bw-ease-standard);
+}
+
+.slider:before {
+    transition: transform 220ms var(--bw-ease-emphasized);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+}
+
+input:checked + .slider {
+    background-color: var(--nectar-accent, var(--bw-accent));
+    border-color: var(--nectar-accent, var(--bw-accent));
+    box-shadow: 0 0 10px rgba(181, 31, 46, 0.35);
+}
+
+.light-mode .slider {
+    background-color: rgba(0, 0, 0, 0.12);
+}
+
+input:focus-visible + .slider {
+    outline: 2px solid var(--nectar-accent, var(--bw-accent));
+    outline-offset: 2px;
+}
+
+/* ── Range sliders ────────────────────────────────────────────────────────── */
+
+.settings-slider {
+    accent-color: var(--nectar-accent, var(--bw-accent));
+}
+
+.settings-slider::-webkit-slider-thumb {
+    background: var(--nectar-accent, var(--bw-accent));
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    transition: transform var(--bw-duration-fast) var(--bw-ease-emphasized);
+}
+
+.settings-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.12);
+}
+
+/* ── Dropdowns ────────────────────────────────────────────────────────────── */
+
+.dropdown-trigger {
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--nectar-border, var(--bw-hairline));
+    transition:
+        background-color var(--bw-duration-fast) var(--bw-ease-standard),
+        border-color var(--bw-duration-fast) var(--bw-ease-standard);
+}
+
+.dropdown-trigger:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--bw-border-strong);
+}
+
+.dropdown-trigger.open {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--bw-accent-line);
+}
+
+.dropdown-menu {
+    border-radius: 10px;
+    background: rgba(21, 23, 28, 0.97);
+    border: 1px solid var(--bw-border);
+    box-shadow: var(--bw-shadow-3);
+    backdrop-filter: blur(26px) saturate(1.4);
+    -webkit-backdrop-filter: blur(26px) saturate(1.4);
+}
+
+.light-mode .dropdown-menu {
+    background: rgba(250, 250, 252, 0.97);
+}
+
+.dropdown-item {
+    border-radius: 7px;
+}
+
+.dropdown-item:hover {
+    background: var(--bw-accent-soft);
+}
+
+.dropdown-item.selected {
+    color: var(--nectar-accent, var(--bw-accent));
+}
+
+.dropdown-item svg {
+    color: var(--nectar-accent, var(--bw-accent));
+}
+
+/* ── Unit toggle, scale buttons, color picker ─────────────────────────────── */
+
+.unit-toggle-minimal span.active {
+    background: var(--nectar-accent, var(--bw-accent));
+    color: #ffffff;
+    box-shadow: var(--bw-inset-hairline);
+}
+
+.scale-adjust-btn {
+    border-radius: 8px;
+    transition:
+        background-color var(--bw-duration-fast) var(--bw-ease-standard),
+        border-color var(--bw-duration-fast) var(--bw-ease-standard),
+        transform var(--bw-duration-fast) var(--bw-ease-emphasized);
+}
+
+.scale-adjust-btn:hover:not(:disabled) {
+    background: var(--bw-accent-soft);
+    border-color: var(--bw-accent-line);
+}
+
+.scale-adjust-btn:active:not(:disabled) {
+    transform: scale(0.94);
+}
+
+.scale-display-value {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+
+.color-picker-input {
+    border-radius: 8px;
+    border: 1px solid var(--bw-border-strong);
+    box-shadow: var(--bw-inset-hairline);
+    cursor: pointer;
+}
+
+.color-picker-label {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+    color: var(--nectar-text-muted, var(--bw-text-muted));
+}
+
+/* ── Accent presets (BloodWing Appearance tab) ────────────────────────────── */
+
+.bw-preset-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bw-preset-swatch {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    padding: 0;
+    cursor: pointer;
+    position: relative;
+    transition:
+        transform var(--bw-duration-fast) var(--bw-ease-emphasized),
+        border-color var(--bw-duration-fast) var(--bw-ease-standard);
+}
+
+.bw-preset-swatch:hover {
+    transform: scale(1.12);
+}
+
+.bw-preset-swatch.active {
+    border-color: var(--nectar-text, var(--bw-text));
+    box-shadow: 0 0 0 2px rgba(11, 12, 15, 0.6);
+}
+
+.light-mode .bw-preset-swatch.active {
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9);
+}
+
+/* Compact native color input used as the "custom accent" swatch. */
+.bw-preset-custom {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 1px solid var(--bw-border-strong);
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    overflow: hidden;
+    transition: transform var(--bw-duration-fast) var(--bw-ease-emphasized);
+}
+
+.bw-preset-custom:hover {
+    transform: scale(1.12);
+}
+
+.bw-preset-custom::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+.bw-preset-custom::-webkit-color-swatch {
+    border: none;
+    border-radius: 50%;
+}
+
+/* ── About tab ────────────────────────────────────────────────────────────── */
+
+.about-logo {
+    filter: drop-shadow(0 0 14px rgba(181, 31, 46, 0.45));
+}
+
+.update-pill {
+    border-radius: var(--bw-radius-pill);
+    transition:
+        background-color var(--bw-duration-fast) var(--bw-ease-standard),
+        border-color var(--bw-duration-fast) var(--bw-ease-standard),
+        transform var(--bw-duration-fast) var(--bw-ease-emphasized);
+}
+
+.update-pill:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.update-pill--available {
+    background: var(--nectar-accent, var(--bw-accent));
+    border-color: var(--nectar-accent, var(--bw-accent));
+    color: #ffffff;
+    box-shadow: var(--bw-shadow-accent);
+}
+
+.update-pill--available:hover:not(:disabled) {
+    background: var(--bw-accent-hover);
+}
+
+.update-pill--uptodate {
+    background: var(--bw-success-soft);
+    border-color: rgba(63, 185, 80, 0.4);
+    color: var(--bw-success);
+}
+
+.update-pill--error {
+    background: var(--bw-danger-soft);
+    border-color: rgba(229, 72, 77, 0.4);
+    color: var(--bw-danger);
+}
+
+.about-fork-credit {
+    color: var(--bw-text-faint);
+}
+
+/* ── Widget config pills ──────────────────────────────────────────────────── */
+
+.widget-config-zone {
+    border-radius: 10px;
+    border: 1px dashed var(--bw-border-strong);
+    transition: border-color var(--bw-duration-fast) var(--bw-ease-standard);
+}
+
+.widget-config-zone--over {
+    border-color: var(--bw-accent-line);
+    background: var(--bw-accent-soft);
+}
+
+.widget-pill {
+    border-radius: var(--bw-radius-pill);
+    transition:
+        background-color var(--bw-duration-fast) var(--bw-ease-standard),
+        border-color var(--bw-duration-fast) var(--bw-ease-standard),
+        transform var(--bw-duration-fast) var(--bw-ease-emphasized);
+}
+
+.widget-pill--placed {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: var(--bw-border-strong);
+}
+
+.widget-pill--available:hover {
+    background: var(--bw-accent-soft);
+    border-color: var(--bw-accent-line);
+    transform: translateY(-1px);
+}
+
+.widget-pill-btn:hover {
+    background: var(--bw-accent-soft);
+}
+
+.widget-pill-btn--x:hover {
+    background: var(--bw-danger-soft);
+    color: var(--bw-danger);
+}
+
+/* ── CalDAV section ───────────────────────────────────────────────────────── */
+
+.caldav-btn {
+    border-radius: 8px;
+    transition:
+        background-color var(--bw-duration-fast) var(--bw-ease-standard),
+        border-color var(--bw-duration-fast) var(--bw-ease-standard),
+        transform var(--bw-duration-fast) var(--bw-ease-emphasized);
+}
+
+.caldav-btn:hover:not(:disabled) {
+    border-color: var(--bw-border-strong);
+}
+
+.caldav-btn:active:not(:disabled) {
+    transform: scale(0.97);
+}
+
+.caldav-btn.primary {
+    background: var(--nectar-accent, var(--bw-accent));
+    border-color: var(--nectar-accent, var(--bw-accent));
+    color: #ffffff;
+    box-shadow: var(--bw-shadow-accent);
+}
+
+.caldav-btn.primary:hover:not(:disabled) {
+    background: var(--bw-accent-hover);
+}
+
+.caldav-btn.danger {
+    background: var(--bw-danger-soft);
+    border-color: rgba(229, 72, 77, 0.4);
+    color: var(--bw-danger);
+}
+
+.caldav-form input {
+    border-radius: 8px;
+    transition: border-color var(--bw-duration-fast) var(--bw-ease-standard);
+}
+
+.caldav-form input:focus {
+    border-color: var(--bw-accent-line);
+}
+
+.caldav-error,
+.caldav-error--page {
+    color: var(--bw-danger);
+}
+
+.caldav-detect.good {
+    color: var(--bw-success);
+}
+
+.caldav-detect.bad {
+    color: var(--bw-danger);
+}
+
+.caldav-chips button {
+    border-radius: var(--bw-radius-pill);
+    transition:
+        background-color var(--bw-duration-fast) var(--bw-ease-standard),
+        border-color var(--bw-duration-fast) var(--bw-ease-standard);
+}
+
+.caldav-chips button.active {
+    background: var(--nectar-accent, var(--bw-accent));
+    border-color: var(--nectar-accent, var(--bw-accent));
+    color: #ffffff;
+}
+
+.caldav-link-btn {
+    color: var(--nectar-accent, var(--bw-accent));
+}
+
+.caldav-link-btn:hover {
+    color: var(--bw-accent-hover);
+}
+
+/* ── City search and process list ─────────────────────────────────────────── */
+
+.city-input-row input {
+    border-radius: 8px;
+    transition: border-color var(--bw-duration-fast) var(--bw-ease-standard);
+}
+
+.city-input-row input:focus {
+    border-color: var(--bw-accent-line);
+}
+
+.city-dropdown {
+    border-radius: 10px;
+    background: rgba(21, 23, 28, 0.97);
+    border: 1px solid var(--bw-border);
+    box-shadow: var(--bw-shadow-3);
+    backdrop-filter: blur(26px) saturate(1.4);
+    -webkit-backdrop-filter: blur(26px) saturate(1.4);
+}
+
+.light-mode .city-dropdown {
+    background: rgba(250, 250, 252, 0.97);
+}
+
+.city-dropdown-item {
+    border-radius: 7px;
+}
+
+.city-dropdown-item:hover {
+    background: var(--bw-accent-soft);
+}
+
+.city-clear-btn:hover {
+    color: var(--nectar-text, var(--bw-text));
+}
+
+.process-end-btn:hover:not(:disabled) {
+    background: var(--bw-danger-soft);
+    border-color: rgba(229, 72, 77, 0.4);
+    color: var(--bw-danger);
+}
+
+.process-icon {
+    border-radius: 8px;
+}
+
+/* ── Actions and misc rows ────────────────────────────────────────────────── */
+
+.setting-item.action:hover {
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.setting-item.action.danger:hover {
+    background: var(--bw-danger-soft);
+}
+
+.setting-item.action.danger .setting-label {
+    color: var(--bw-danger);
+}
+
+.processes-refresh-btn {
+    border-radius: 8px;
+    transition: background-color var(--bw-duration-fast) var(--bw-ease-standard);
+}
+
+.processes-refresh-btn:hover {
+    background: var(--bw-accent-soft);
+}
+
+.searching-spinner {
+    border-top-color: var(--nectar-accent, var(--bw-accent));
+}
