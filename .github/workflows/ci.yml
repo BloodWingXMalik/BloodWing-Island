@@ -1,0 +1,56 @@
+name: CI
+
+# Windows-only project: the Rust backend links Win32/COM/WASAPI APIs directly,
+# so build and test jobs must run on a Windows runner.
+#
+# Third-party actions are pinned to commit SHAs (with the human-readable ref in a
+# comment) so that a retagged major version cannot silently change what runs here.
+# No secrets are referenced anywhere in this workflow.
+
+on:
+  push:
+    branches:
+      - main
+      - bloodwing-customization
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    name: Build and test (Windows x64)
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.4.3
+
+      - name: Set up Rust (stable, MSVC)
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install frontend dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Type-check and build frontend
+        run: bun run build
+
+      - name: Run Rust tests
+        run: cargo test --manifest-path src-tauri/Cargo.toml
