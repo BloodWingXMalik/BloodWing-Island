@@ -1342,6 +1342,95 @@ fn set_physical_monitors_brightness(brightness: u32) {
     }
 }
 
+/// Applies brightness to the internal panel via WMI.
+///
+/// The instance paths (`__RELPATH`) are cached so a drag does not pay for a full
+/// `ExecQuery` on every step; the cache is dropped when a call fails so display
+/// hot-plug changes are picked up again. While the class reports no instances
+/// (desktops without WMI brightness support) re-resolving is rate-limited.
+/// Returns true when at least one set call succeeded.
+unsafe fn apply_wmi_brightness(
+    services: &windows::Win32::System::Wmi::IWbemServices,
+    set_params: Option<&windows::Win32::System::Wmi::IWbemClassObject>,
+    paths: &mut Vec<String>,
+    last_resolve: &mut Option<std::time::Instant>,
+    brightness: u32,
+) -> bool {
+    use windows::Win32::System::Variant::{VariantClear, VARIANT, VARENUM};
+    use windows::Win32::System::Wmi::{IWbemClassObject, WBEM_GENERIC_FLAG_TYPE};
+    use windows::core::BSTR;
+
+    if paths.is_empty() {
+        if last_resolve.is_some_and(|t| t.elapsed() < std::time::Duration::from_secs(30)) {
+            return false;
+        }
+        *last_resolve = Some(std::time::Instant::now());
+
+        let wql = BSTR::from("WQL");
+        let q = BSTR::from("SELECT * FROM WmiMonitorBrightnessMethods");
+        if let Ok(enum_obj) = services.ExecQuery(&wql, &q, WBEM_GENERIC_FLAG_TYPE(0), None) {
+            let mut row = [None::<IWbemClassObject>; 1];
+            let mut returned = 0u32;
+            while enum_obj.Next(-1i32, &mut row, &mut returned).is_ok() && returned > 0 {
+                if let Some(obj) = row[0].take() {
+                    let mut var = VARIANT::default();
+                    if obj.Get(windows::core::w!("__RELPATH"), 0i32, &mut var, None, None).is_ok() {
+                        let relpath_str = var.Anonymous.Anonymous.Anonymous.bstrVal.to_string();
+                        let _ = VariantClear(&mut var);
+                        if !relpath_str.is_empty() {
+                            paths.push(relpath_str);
+                        }
+                    }
+                }
+            }
+        }
+        if paths.is_empty() {
+            return false;
+        }
+    }
+
+    let Some(in_cls) = set_params else { return false };
+
+    let mut applied = false;
+    let mut failed = false;
+    for path in paths.iter() {
+        let Ok(in_params) = in_cls.SpawnInstance(0i32) else {
+            failed = true;
+            continue;
+        };
+
+        let mut b_var = VARIANT::default();
+        let b_anon = &mut b_var.Anonymous.Anonymous;
+        b_anon.vt = VARENUM(17); // VT_UI1
+        b_anon.Anonymous.bVal = brightness as u8;
+        let _ = in_params.Put(windows::core::w!("Brightness"), 0i32, &b_var, 0);
+
+        let mut t_var = VARIANT::default();
+        let t_anon = &mut t_var.Anonymous.Anonymous;
+        t_anon.vt = VARENUM(3); // VT_I4
+        t_anon.Anonymous.lVal = 0i32;
+        let _ = in_params.Put(windows::core::w!("Timeout"), 0i32, &t_var, 0);
+
+        let obj_path = BSTR::from(path.as_str());
+        let method_name = BSTR::from("WmiSetBrightness");
+        if services
+            .ExecMethod(&obj_path, &method_name, WBEM_GENERIC_FLAG_TYPE(0), None, Some(&in_params), None, None)
+            .is_ok()
+        {
+            applied = true;
+        } else {
+            failed = true;
+        }
+    }
+
+    if failed {
+        // The instance set changed (display hot-plug etc.) -- resolve again next time.
+        paths.clear();
+        *last_resolve = None;
+    }
+    applied
+}
+
 pub fn setup_brightness_worker() {
     let (tx, rx) = channel::<u32>();
     let _ = BRIGHTNESS_SENDER.set(tx);
@@ -1352,7 +1441,6 @@ pub fn setup_brightness_worker() {
             EOAC_NONE, RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE,
         };
         use windows::Win32::System::Wmi::{IWbemLocator, IWbemClassObject, WbemLocator, WBEM_GENERIC_FLAG_TYPE};
-        use windows::Win32::System::Variant::{VARIANT, VariantClear, VARENUM};
 
         let _ = CoInitializeEx(None, COINIT_MULTITHREADED);
 
@@ -1395,60 +1483,40 @@ pub fn setup_brightness_worker() {
             in_cls
         };
 
+        let mut wmi_paths: Vec<String> = Vec::new();
+        let mut wmi_last_resolve: Option<std::time::Instant> = None;
+
         while let Ok(mut brightness) = rx.recv() {
-            // A drag queues a value per event and each write is slow, only the latest matters.
-            while let Ok(newer) = rx.try_recv() {
-                brightness = newer;
-            }
-            let brightness = brightness.min(100);
-            // 1. Laptop internal panel via WMI WmiMonitorBrightnessMethods
-            let wql = windows::core::BSTR::from("WQL");
-            let q = windows::core::BSTR::from("SELECT * FROM WmiMonitorBrightnessMethods");
-            if let Ok(enum_obj) = services.ExecQuery(&wql, &q, WBEM_GENERIC_FLAG_TYPE(0), None) {
-                let mut row = [None::<IWbemClassObject>; 1];
-                let mut returned = 0u32;
-                while enum_obj.Next(-1i32, &mut row, &mut returned).is_ok() && returned > 0 {
-                    if let Some(obj) = row[0].take() {
-                        let mut var = VARIANT::default();
-                        if obj.Get(windows::core::w!("__RELPATH"), 0i32, &mut var, None, None).is_ok() {
-                            let relpath_str = var.Anonymous.Anonymous.Anonymous.bstrVal.to_string();
-                            let _ = VariantClear(&mut var);
-                            if !relpath_str.is_empty() {
-                                let obj_path = windows::core::BSTR::from(relpath_str.as_str());
-                                let method_name = windows::core::BSTR::from("WmiSetBrightness");
-
-                                {
-                                    if let Some(ref in_cls) = set_brightness_params {
-                                        if let Ok(in_params) = in_cls.SpawnInstance(0i32) {
-                                            let mut b_var = VARIANT::default();
-                                            let b_anon = &mut b_var.Anonymous.Anonymous;
-                                            b_anon.vt = VARENUM(17); // VT_UI1
-                                            b_anon.Anonymous.bVal = brightness as u8;
-                                            let _ = in_params.Put(windows::core::w!("Brightness"), 0i32, &b_var, 0);
-
-                                            let mut t_var = VARIANT::default();
-                                            let t_anon = &mut t_var.Anonymous.Anonymous;
-                                            t_anon.vt = VARENUM(3); // VT_I4
-                                            t_anon.Anonymous.lVal = 0i32;
-                                            let _ = in_params.Put(windows::core::w!("Timeout"), 0i32, &t_var, 0);
-
-                                            let _ = services.ExecMethod(
-                                                &obj_path, &method_name, WBEM_GENERIC_FLAG_TYPE(0), None,
-                                                Some(&in_params), None, None,
-                                            );
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+            loop {
+                // A drag queues a value per event and each write is slow, only the latest matters.
+                while let Ok(newer) = rx.try_recv() {
+                    brightness = newer;
                 }
+                brightness = brightness.min(100);
+
+                // 1. Laptop internal panel via WMI WmiMonitorBrightnessMethods
+                let _ = apply_wmi_brightness(
+                    &services,
+                    set_brightness_params.as_ref(),
+                    &mut wmi_paths,
+                    &mut wmi_last_resolve,
+                    brightness,
+                );
+
+                // While the user is still dragging (another value within the settle window),
+                // skip the slow DDC/CI pass -- only the value the drag lands on needs it.
+                match rx.recv_timeout(std::time::Duration::from_millis(250)) {
+                    Ok(newer) => {
+                        brightness = newer;
+                        continue;
+                    }
+                    Err(_) => {}
+                }
+
+                // 2. Desktop external monitor via Physical Monitor API (DXVA2 DDC/CI)
+                set_physical_monitors_brightness(brightness);
+                break;
             }
-
-            // 2. Desktop external monitor via Physical Monitor API (DXVA2 DDC/CI)
-            set_physical_monitors_brightness(brightness);
-
-
         }
         let _ = CoUninitialize();
     });
