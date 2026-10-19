@@ -1,5 +1,19 @@
 <div align="center">
 
+> **This is the BloodWing build.** A personal, rebranded build of Nectar maintained in this
+> repository: charcoal-black and red theme, BloodWing identity, reliability hardening
+> (taskbar recovery, settings backups and validation), and a brightness-latency fix.
+> It is based on [Nectar](https://github.com/kua8/Nectar) by kua8 (itself a fork of
+> [Bloom](https://github.com/SehajveerSingh2005/bloom) by Sehajveer Singh) and remains
+> under the GPL-3.0.
+>
+> - [BUILD.md](BUILD.md) — how to build and package BloodWing
+> - [CUSTOMIZATION.md](CUSTOMIZATION.md) — everything that differs from upstream
+> - [TEST-REPORT.md](TEST-REPORT.md) — verification results for this build
+> - [RELEASE-NOTES.md](RELEASE-NOTES.md) — what is in this release
+>
+> The rest of this file is the upstream Nectar README and describes the shared feature set.
+
 <img src="docs/logo.png" width="160" alt="Nectar logo" />
 
 <br />

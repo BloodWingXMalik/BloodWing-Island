@@ -1,6 +1,8 @@
-# Nectar Settings Reference
+# BloodWing Settings Reference
 
-All settings are stored in `settings.json` in the app config directory (`%APPDATA%/com.kua8.nectar/`, derived from the Tauri app identifier). The file is a flat JSON object with `nectar-` prefixed keys. Nectar watches this file for external changes and applies them in real-time.
+All settings are stored in `settings.json` in the app config directory (`%APPDATA%/com.bloodwing.notch/`, derived from the Tauri app identifier). The file is a flat JSON object with `nectar-` prefixed keys (kept for compatibility with the upstream Nectar schema). BloodWing watches this file for external changes and applies them in real-time.
+
+Before an upgrade or a reset can touch the file, BloodWing snapshots it: `settings.backup.json` is written once at first launch (never overwritten afterwards), and "Reset to Defaults" additionally writes `settings.backup.<unix>.json` and keeps the three newest copies.
 
 ## Quick Start
 
@@ -131,12 +133,14 @@ Removing a link or disconnecting the account deletes its stored secret and cache
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| `nectar-theme-mode` | `"dark"` / `"light"` / `"custom"` / `"adaptive"` | `"dark"` | Theme mode. **dark** = dark translucent. **light** = light translucent. **custom** = user-picked color. **adaptive** = follows Windows system accent color. |
-| `nectar-theme-color` | hex string | `"#007aff"` | Custom theme color (used in `custom` and `adaptive` modes). |
+| `nectar-theme-mode` | `"dark"` / `"light"` / `"custom"` / `"adaptive"` | `"dark"` | Theme mode. **dark** = charcoal-black glass with the accent color below. **light** = light translucent. **custom** = background tinted from the accent color. **adaptive** = background and accent follow the Windows system accent color. |
+| `nectar-theme-color` | hex string | `"#b51f2e"` | Accent color. Used as the UI accent in **every** mode (dark, light, custom, adaptive), as the custom background tint in `custom` mode, and it is what the preset swatches in Settings › Appearance write. The BloodWing default is brand red `#B51F2E`. |
 | `nectar-theme-opacity` | float string | `"0.80"` | Background opacity (0.1 to 1.0). |
 | `nectar-theme-saturation` | float string | `"0.50"` | Color saturation for custom/adaptive themes (0.0 to 1.0). |
 | `nectar-theme-brightness` | float string | `"0.15"` | Background brightness for custom/adaptive themes (0.0 to 1.0). |
 | `nectar-corners-enabled` | `"true"` / `"false"` | `"false"` | Render rounded screen corner overlays on top edges. |
+| `nectar-reduce-motion` | `"system"` / `"on"` / `"off"` | `"system"` | Motion preference. **system** = follow the Windows "Show animations" setting. **on** = always reduce (shorter, non-springy transitions). **off** = always full motion. Also exposes a `.reduce-motion` class other styles can hook into. |
+| `nectar-motion-intensity` | `"full"` / `"balanced"` / `"minimal"` | `"full"` | How lively animations are. **full** = upstream springs everywhere. **balanced** = softer springs and shorter fades. **minimal** = near-instant transitions; also pauses the dock hover bounce and splash spin. Applies together with `nectar-reduce-motion` (either one can tone motion down; `"off"` + `"full"` = upstream behavior). |
 
 ### Status Widgets
 
@@ -205,15 +209,15 @@ UI re-renders with new values
 
 ```powershell
 # PowerShell: switch dock to smart mode
-$json = Get-Content "$env:APPDATA\com.kua8.nectar\settings.json" | ConvertFrom-Json
+$json = Get-Content "$env:APPDATA\com.bloodwing.notch\settings.json" | ConvertFrom-Json
 $json.'nectar-dock-mode' = 'smart'
-$json | ConvertTo-Json | Set-Content "$env:APPDATA\com.kua8.nectar\settings.json"
+$json | ConvertTo-Json | Set-Content "$env:APPDATA\com.bloodwing.notch\settings.json"
 ```
 
 ```python
 # Python: disable dock
 import json, os
-path = os.path.join(os.environ['APPDATA'], 'com.kua8.nectar', 'settings.json')
+path = os.path.join(os.environ['APPDATA'], 'com.bloodwing.notch', 'settings.json')
 with open(path) as f: settings = json.load(f)
 settings['nectar-dock-enabled'] = 'false'
 with open(path, 'w') as f: json.dump(settings, f)
@@ -222,6 +226,8 @@ with open(path, 'w') as f: json.dump(settings, f)
 ## Notes
 
 - All boolean values are strings (`"true"` / `"false"`) for consistency with `localStorage`.
+- Values are validated in `save_setting` before they reach the file: keys must match `nectar-` + lowercase/digits/dashes, values are capped at 256 KB, numbers must be finite and inside their documented range, and known mode keys reject unknown values. `null` clears a key.
+- External edits are not re-validated (they bypass `save_setting`); the file watcher still applies them.
 - The `useSettingsSync` hook auto-converts `"true"` / `"false"` strings to booleans.
 - `auto-hide` mode values in `nectar-dock-mode` and `nectar-notch-mode` are legacy aliases for `smart` — they are mapped automatically.
 - Changing `nectar-scale` triggers AppBar re-registration to adjust reserved screen space.
