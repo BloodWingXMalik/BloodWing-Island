@@ -30,7 +30,7 @@ export function GeneralTab({
     <>
       <div className="setting-group-label">System</div>
       <div className="setting-group">
-        <SettingRow icon={Power} label="Launch at Login" desc="Open Nectar automatically">
+        <SettingRow icon={Power} label="Launch at Login" desc="Open BloodWing automatically">
           <label className="toggle-switch">
             <input type="checkbox" checked={autostart} onChange={toggleAutostart} />
             <span className="slider"></span>
@@ -71,8 +71,8 @@ export function GeneralTab({
 
       <div className="setting-group-label">App</div>
       <div className="setting-group">
-        <SettingRow icon={RefreshCw} label="Restart Nectar" desc="Reinitialize all components" action onClick={restartNectar} />
-        <SettingRow icon={LogOut} label="Quit Nectar" desc="Exit application completely" action danger onClick={quitNectar} divider={false} />
+        <SettingRow icon={RefreshCw} label="Restart BloodWing" desc="Reinitialize all components" action onClick={restartNectar} />
+        <SettingRow icon={LogOut} label="Quit BloodWing" desc="Exit application completely" action danger onClick={quitNectar} divider={false} />
       </div>
     </>
   );

@@ -81,7 +81,7 @@ const GUIDES: Guide[] = [
     steps: [
       "Open the Calendar app in Nextcloud.",
       "Click the share icon next to a calendar, then the + next to Share link.",
-      "Copy the link and paste it here. Nectar converts it to the calendar feed for you.",
+      "Copy the link and paste it here. BloodWing converts it to the calendar feed for you.",
     ],
     note: "To read your own private calendars without a public link, use the CalDAV account option further down instead.",
   },

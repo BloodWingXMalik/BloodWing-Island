@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 1024 1024" aria-label="BloodWing">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#15171C"/>
+      <stop offset="1" stop-color="#0B0C0F"/>
+    </linearGradient>
+    <linearGradient id="wing" x1="0.23" y1="0.42" x2="0.77" y2="0.74">
+      <stop offset="0" stop-color="#D02C3D"/>
+      <stop offset="1" stop-color="#8E1622"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="232" fill="url(#bg)" stroke="#ffffff" stroke-opacity="0.1" stroke-width="2"/>
+  <rect x="248" y="232" width="528" height="132" rx="66" fill="#F3F4F6"/>
+  <g fill="none" stroke="url(#wing)" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M316 446 L512 538 L708 446" stroke-width="58"/>
+    <path d="M356 556 L512 648 L668 556" stroke-width="50"/>
+    <path d="M396 666 L512 758 L628 666" stroke-width="42"/>
+  </g>
+</svg>

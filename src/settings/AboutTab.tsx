@@ -98,7 +98,7 @@ export function AboutTab({
       case "available":
         return `Update Available (v${updateVersion})`;
       case "uptodate":
-        return "Nectar is up to date";
+        return "BloodWing is up to date";
       case "downloading":
         return "Downloading Update...";
       case "installing":
@@ -159,11 +159,11 @@ export function AboutTab({
     if (uninstallStatus === "uninstalling") return "Uninstalling...";
     if (uninstallStatus === "confirm") return "Click Again to Confirm";
     if (uninstallStatus === "error") return "Couldn't Start Uninstaller";
-    return "Uninstall Nectar";
+    return "Uninstall BloodWing";
   };
 
   const getUninstallDesc = () => {
-    if (uninstallStatus === "confirm") return "This will remove Nectar from your computer";
+    if (uninstallStatus === "confirm") return "This will remove BloodWing from your computer";
     if (uninstallStatus === "error") return uninstallError || "Try again, or use Windows Settings > Apps";
     return "Doesn't require Windows Settings to be open";
   };
@@ -172,8 +172,8 @@ export function AboutTab({
   return (
     <div className="about-tab-container">
       <div className="about-header">
-        <img src="/nectar.png" className="about-logo" alt="Nectar Logo" />
-        <h1 className="about-title">Nectar</h1>
+        <img src="/bloodwing-mark.png" className="about-logo" alt="BloodWing logo" />
+        <h1 className="about-title">BloodWing</h1>
         <p className="about-version">Version {appVersion || "—"}</p>
         <button
           className={`update-pill update-pill--${updateStatus || "idle"}`}
@@ -238,7 +238,7 @@ export function AboutTab({
           action
           onClick={copyDiagnostics}
         />
-        <SettingRow icon={FolderOpen} label="Open Log Folder" desc="nectar.log and diagnostics.txt" action onClick={() => invoke("open_log_folder").catch(() => {})} />
+        <SettingRow icon={FolderOpen} label="Open Log Folder" desc="bloodwing.log and diagnostics.txt" action onClick={() => invoke("open_log_folder").catch(() => {})} />
         <SettingRow
           icon={Crosshair}
           label="Log Dock and Notch Clicks"
@@ -268,7 +268,7 @@ export function AboutTab({
       </div>
 
       <div className="about-footer">
-        <p>Made with ❤️ by kua8</p>
+        <p>BloodWing build · based on Nectar by kua8 (GPL-3.0)</p>
       </div>
     </div>
   );

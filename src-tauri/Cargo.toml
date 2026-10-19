@@ -1,8 +1,8 @@
 [package]
 name = "nectar"
 version = "1.4.1"
-description = ""
-authors = ["kua8"]
+description = "BloodWing — notch, dock and status-bar replacement for Windows 11, based on Nectar (GPL-3.0)"
+authors = ["kua8", "BloodWing contributors"]
 edition = "2021"
 license = "GPL-3.0-only"
 

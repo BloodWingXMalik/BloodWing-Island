@@ -346,7 +346,7 @@ fn parse_report(xml: &str, calendar: &str, color: &Option<String>) -> Result<Vec
 pub async fn fetch_all(creds: &Creds) -> Result<(Vec<CalInfo>, Vec<CalEvent>), String> {
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(30))
-        .user_agent("Nectar")
+        .user_agent("BloodWing")
         .build()
         .map_err(|e| e.to_string())?;
     let base = normalize_base(&creds.url)?;

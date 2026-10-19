@@ -768,7 +768,7 @@ export function useSettings() {
       const { save: saveDialog } = await import("@tauri-apps/plugin-dialog");
       const settingsJson = await invoke<string>("export_settings");
       const filePath = await saveDialog({
-        title: "Export Nectar Settings",
+        title: "Export BloodWing Settings",
         defaultPath: "nectar-settings.json",
         filters: [{ name: "JSON", extensions: ["json"] }],
       });
@@ -791,7 +791,7 @@ export function useSettings() {
     try {
       const { open: openDialog } = await import("@tauri-apps/plugin-dialog");
       const filePath = await openDialog({
-        title: "Import Nectar Settings",
+        title: "Import BloodWing Settings",
         filters: [{ name: "JSON", extensions: ["json"] }],
         multiple: false,
       });

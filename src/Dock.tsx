@@ -81,14 +81,14 @@ const fileOf = (p: string) =>
 // AUMIDs identify one app. Two PWAs in the same browser must never match on the shared exe name.
 const isIdentifier = (p: string) => !p.includes('/') && !p.includes('\\');
 
-const isNectarWindow = (app: { name: string; path: string }) =>
-  app.path.toLowerCase().includes('nectar.exe') || app.name.toLowerCase() === 'nectar';
+const isBloodWingWindow = (app: { name: string; path: string }) =>
+  app.path.toLowerCase().includes('bloodwing.exe') || app.name.toLowerCase() === 'bloodwing';
 
 // Start button icon: a public asset, or the data URI of an uploaded icon ("custom:" prefix).
 function resolveStartIcon(startIcon: string): string {
   if (startIcon === "windows") return "/windows.png";
   if (startIcon.startsWith("custom:")) return startIcon.slice("custom:".length);
-  return "/nectar.png";
+  return "/bloodwing-mark.png";
 }
 
 // Stable module-level constants so object references never change between renders,
@@ -1120,13 +1120,13 @@ const Dock = memo(function Dock() {
                     const allowPathFallback = !isHost || !app.is_running;
                     const icon = customIcons[cacheKey] || (allowPathFallback && customIcons[app.path]) || iconsRef.current[cacheKey] || (allowPathFallback && iconsRef.current[app.path]) || app.icon;
                     
-                    const isNectarOrSettings = isNectarWindow(app);
+                    const isBloodWingOrSettings = isBloodWingWindow(app);
                     
-                    return (icon || isNectarOrSettings) ? (
+                    return (icon || isBloodWingOrSettings) ? (
                       <img 
-                        src={isNectarOrSettings ? "/nectar.png" : (icon ?? undefined)} 
+                        src={isBloodWingOrSettings ? "/bloodwing-mark.png" : (icon ?? undefined)} 
                         alt={app.name} 
-                        className={isNectarOrSettings ? "nectar-icon-img" : ""} 
+                        className={isBloodWingOrSettings ? "nectar-icon-img" : ""} 
                         draggable={false} 
                       />
                     ) : (
@@ -1226,9 +1226,9 @@ const Dock = memo(function Dock() {
                         // Running host items skip the shared path fallback, or the browser's icon leaks onto its PWAs.
                     const allowPathFallback = !isHost || !app.is_running;
                     const icon = customIcons[cacheKey] || (allowPathFallback && customIcons[app.path]) || iconsRef.current[cacheKey] || (allowPathFallback && iconsRef.current[app.path]) || app.icon;
-                          const isNectarOrSettings = isNectarWindow(app);
-                          return (icon || isNectarOrSettings) ? (
-                            <img src={isNectarOrSettings ? "/nectar.png" : (icon ?? undefined)} alt={app.name} className={isNectarOrSettings ? "nectar-icon-img" : ""} draggable={false} />
+                          const isBloodWingOrSettings = isBloodWingWindow(app);
+                          return (icon || isBloodWingOrSettings) ? (
+                            <img src={isBloodWingOrSettings ? "/bloodwing-mark.png" : (icon ?? undefined)} alt={app.name} className={isBloodWingOrSettings ? "nectar-icon-img" : ""} draggable={false} />
                           ) : (
                             <div className="fallback-icon">{app.name[0]}</div>
                           );
@@ -1324,9 +1324,9 @@ const Dock = memo(function Dock() {
                           // Running host items skip the shared path fallback, or the browser's icon leaks onto its PWAs.
                     const allowPathFallback = !isHost || !app.is_running;
                     const icon = customIcons[cacheKey] || (allowPathFallback && customIcons[app.path]) || iconsRef.current[cacheKey] || (allowPathFallback && iconsRef.current[app.path]) || app.icon;
-                          const isNectarOrSettings = isNectarWindow(app);
-                          return (icon || isNectarOrSettings) ? (
-                            <img src={isNectarOrSettings ? "/nectar.png" : (icon ?? undefined)} alt={app.name} className={isNectarOrSettings ? "nectar-icon-img" : ""} draggable={false} />
+                          const isBloodWingOrSettings = isBloodWingWindow(app);
+                          return (icon || isBloodWingOrSettings) ? (
+                            <img src={isBloodWingOrSettings ? "/bloodwing-mark.png" : (icon ?? undefined)} alt={app.name} className={isBloodWingOrSettings ? "nectar-icon-img" : ""} draggable={false} />
                           ) : (
                             <div className="fallback-icon">{app.name[0]}</div>
                           );
@@ -1415,15 +1415,15 @@ const Dock = memo(function Dock() {
                 onMouseEnter={() => setActiveSubmenu('nectar')}
                 onMouseLeave={() => setActiveSubmenu(null)}
               >
-                Nectar Options
+                BloodWing Options
                 <span className="submenu-arrow">▶</span>
                 <div className="submenu">
                   <div className="menu-item" onClick={() => { invoke('open_calendar_window'); closeMenu(); }}>Open Calendar</div>
                   <div className="menu-item" onClick={() => { invoke('open_settings_window'); closeMenu(); }}>Open Settings</div>
-                  <div className="menu-item" onClick={() => invoke('restart_nectar')}>Restart Nectar</div>
+                  <div className="menu-item" onClick={() => invoke('restart_nectar')}>Restart BloodWing</div>
                   <div className="menu-item" onClick={() => { handleClearIconCache(); closeMenu(); }}>Clear Icon Cache</div>
                   <div className="menu-divider" />
-                  <div className="menu-item quit" onClick={() => invoke('quit_nectar')}>Quit Nectar</div>
+                  <div className="menu-item quit" onClick={() => invoke('quit_nectar')}>Quit BloodWing</div>
                 </div>
               </div>
               {contextMenu.app.is_running && (
@@ -1453,15 +1453,15 @@ const Dock = memo(function Dock() {
                 onMouseEnter={() => setActiveSubmenu('nectar')}
                 onMouseLeave={() => setActiveSubmenu(null)}
               >
-                Nectar Options
+                BloodWing Options
                 <span className="submenu-arrow">▶</span>
                 <div className="submenu">
                   <div className="menu-item" onClick={() => { invoke('open_calendar_window'); closeMenu(); }}>Open Calendar</div>
                   <div className="menu-item" onClick={() => { invoke('open_settings_window'); closeMenu(); }}>Open Settings</div>
-                  <div className="menu-item" onClick={() => invoke('restart_nectar')}>Restart Nectar</div>
+                  <div className="menu-item" onClick={() => invoke('restart_nectar')}>Restart BloodWing</div>
                   <div className="menu-item" onClick={() => { handleClearIconCache(); closeMenu(); }}>Clear Icon Cache</div>
                   <div className="menu-divider" />
-                  <div className="menu-item quit" onClick={() => invoke('quit_nectar')}>Quit Nectar</div>
+                  <div className="menu-item quit" onClick={() => invoke('quit_nectar')}>Quit BloodWing</div>
                 </div>
               </div>
             </>

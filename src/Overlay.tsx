@@ -860,7 +860,7 @@ function OverlayApp() {
             transition={{ duration: 0.3 }}
           >
             <motion.img
-              src="/nectar.png"
+              src="/bloodwing-mark.png"
               className="splash-logo"
               draggable={false}
               initial={{ scale: 0, opacity: 0, rotate: 0 }}
@@ -891,7 +891,7 @@ function OverlayApp() {
             transition={{ duration: 0.3 }}
           >
             <div className="update-splash-card">
-              <img src="/nectar.png" className="update-splash-logo" alt="Nectar" />
+              <img src="/bloodwing-mark.png" className="update-splash-logo" alt="BloodWing" />
               <p className="update-splash-text">
                 {updateStatus === 'checking' && "Checking for updates..."}
                 {updateStatus === 'downloading' && `Downloading update... ${updateProgress}%`}

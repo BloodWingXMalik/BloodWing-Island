@@ -2,7 +2,8 @@
 #
 # Renders the BloodWing mark (a hardware-notch silhouette with three swept wing
 # chevrons) with GDI+ and writes:
-#   - public/bloodwing-logo.png        1024x1024 master, used as the app mark
+#   - public/bloodwing-logo.png        1024x1024 master (source for `tauri icon`)
+#   - public/bloodwing-mark.png        128x128 UI mark used in the app windows
 #   - installer/assets/header.bmp      NSIS wizard header (150x57)
 #   - installer/assets/sidebar.bmp     NSIS wizard sidebar (164x314)
 #
@@ -110,6 +111,8 @@ New-Item -ItemType Directory -Force -Path $publicDir, $installerAssets | Out-Nul
 
 New-MasterPng 1024 (Join-Path $publicDir "bloodwing-logo.png")
 Write-Host "wrote public/bloodwing-logo.png"
+New-MasterPng 128 (Join-Path $publicDir "bloodwing-mark.png")
+Write-Host "wrote public/bloodwing-mark.png"
 
 # NSIS wizard bitmaps: dark plate, small mark on the left, wordmark on the right.
 function New-WizardBitmap([int]$w, [int]$h, [string]$path, [bool]$vertical) {
@@ -136,17 +139,22 @@ function New-WizardBitmap([int]$w, [int]$h, [string]$path, [bool]$vertical) {
     $g.DrawImage($mark, [float]$mx, [float]$my)
     $mark.Dispose()
 
-    $font = New-Object System.Drawing.Font "Segoe UI", (if ($vertical) { 13 } else { 11 }), ([System.Drawing.FontStyle]::Bold)
+    $fontSize = 11
+    $smallSize = 7
+    if ($vertical) { $fontSize = 13 }
+    $font = New-Object System.Drawing.Font "Segoe UI", $fontSize, ([System.Drawing.FontStyle]::Bold)
+    $smallFont = New-Object System.Drawing.Font "Segoe UI", $smallSize
     $textBrush = New-Object System.Drawing.SolidBrush $markLight
     $accentBrush = New-Object System.Drawing.SolidBrush $accentHi
     if ($vertical) {
         $g.DrawString("BLOODWING", $font, $textBrush, 12, 150)
-        $g.DrawString("N E C T A R   B U I L D", (New-Object System.Drawing.Font "Segoe UI", 7), $accentBrush, 14, 176)
+        $g.DrawString("N O T C H  &  D O C K", $smallFont, $accentBrush, 14, 176)
     } else {
         $g.DrawString("BLOODWING", $font, $textBrush, 52, 12)
-        $g.DrawString("Nectar build", (New-Object System.Drawing.Font "Segoe UI", 7), $accentBrush, 53, 30)
+        $g.DrawString("for Windows 11", $smallFont, $accentBrush, 53, 30)
     }
     $font.Dispose()
+    $smallFont.Dispose()
     $textBrush.Dispose()
     $accentBrush.Dispose()
     $g.Dispose()

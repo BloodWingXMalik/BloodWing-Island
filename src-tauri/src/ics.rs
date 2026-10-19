@@ -153,7 +153,7 @@ async fn download(url: &Url) -> Result<String, String> {
     let host = url.host_str().unwrap_or("the server").to_string();
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(30))
-        .user_agent("Nectar")
+        .user_agent("BloodWing")
         .build()
         .map_err(|e| e.to_string())?;
     let resp = client

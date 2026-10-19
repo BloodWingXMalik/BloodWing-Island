@@ -753,7 +753,7 @@ body {
   font-weight: 500;
 }
 
-/* Invert Nectar logo / Settings icon in light mode */
+/* Invert BloodWing logo / Settings icon in light mode */
 .light-mode .nectar-icon-img {
   filter: invert(1) brightness(0.15) contrast(1.2);
 }

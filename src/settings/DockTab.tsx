@@ -6,7 +6,7 @@ import type { MonitorInfo, MonitorMode } from "./types";
 import { usePerMonitor } from "./usePerMonitor";
 
 const START_ICON_PRESETS = [
-  { key: "default", src: "/nectar.png", label: "Nectar" },
+  { key: "default", src: "/bloodwing-mark.png", label: "BloodWing" },
   { key: "windows", src: "/windows.png", label: "Windows" },
 ];
 
@@ -105,7 +105,7 @@ export function DockTab({
     <>
       <div className="setting-group-label">Dock</div>
       <div className="setting-group">
-        <SettingRow icon={Monitor} label="Nectar Dock" desc="Replace Windows taskbar">
+        <SettingRow icon={Monitor} label="BloodWing Dock" desc="Replace Windows taskbar">
           <label className="toggle-switch">
             <input type="checkbox" checked={dockEnabled} onChange={toggleDock} />
             <span className="slider"></span>
