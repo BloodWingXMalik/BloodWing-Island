@@ -120,7 +120,8 @@ export async function applyTheme(
     root.style.setProperty('--nectar-text-muted', 'rgba(28, 28, 30, 0.65)');
     root.style.setProperty('--nectar-border', 'rgba(0, 0, 0, 0.12)');
     root.style.setProperty('--nectar-group-bg', 'rgba(0, 0, 0, 0.04)');
-    root.style.setProperty('--nectar-accent', '#007aff');
+    // The theme color doubles as the accent color in every mode (BloodWing).
+    root.style.setProperty('--nectar-accent', customColor);
     root.style.setProperty('--nectar-scrollbar-thumb', 'rgba(0, 0, 0, 0.15)');
     root.classList.add('light-mode');
     root.classList.remove('dark-mode');
@@ -181,14 +182,14 @@ export async function applyTheme(
       applyTheme('dark', customColor, op, saturation, brightness);
     }
   } else {
-    // default/dark
-    root.style.setProperty('--nectar-bg', `rgba(0, 0, 0, ${op})`);
-    root.style.setProperty('--nectar-bg-expanded', `rgba(0, 0, 0, ${opExpanded})`);
-    root.style.setProperty('--nectar-text', '#ffffff');
-    root.style.setProperty('--nectar-text-muted', 'rgba(255, 255, 255, 0.6)');
-    root.style.setProperty('--nectar-border', 'rgba(255, 255, 255, 0.1)');
+    // default/dark — BloodWing charcoal glass with the user accent color
+    root.style.setProperty('--nectar-bg', `rgba(11, 12, 15, ${op})`);
+    root.style.setProperty('--nectar-bg-expanded', `rgba(21, 23, 28, ${opExpanded})`);
+    root.style.setProperty('--nectar-text', '#f3f4f6');
+    root.style.setProperty('--nectar-text-muted', '#a0a5b0');
+    root.style.setProperty('--nectar-border', 'rgba(255, 255, 255, 0.08)');
     root.style.setProperty('--nectar-group-bg', 'rgba(255, 255, 255, 0.04)');
-    root.style.setProperty('--nectar-accent', '#007aff');
+    root.style.setProperty('--nectar-accent', customColor);
     root.style.setProperty('--nectar-scrollbar-thumb', 'rgba(255, 255, 255, 0.1)');
     root.classList.add('dark-mode');
     root.classList.remove('light-mode');
@@ -199,7 +200,7 @@ export async function applyTheme(
 
 export function initTheme() {
   const syncMode = localStorage.getItem('nectar-theme-mode') || 'dark';
-  const syncColor = localStorage.getItem('nectar-theme-color') || '#007aff';
+  const syncColor = localStorage.getItem('nectar-theme-color') || '#b51f2e';
   const syncOpacityVal = localStorage.getItem('nectar-theme-opacity');
   const syncOpacity = syncOpacityVal !== null ? parseFloat(syncOpacityVal) : 0.80;
   const syncSaturationVal = localStorage.getItem('nectar-theme-saturation');
@@ -237,7 +238,7 @@ export function initTheme() {
   // Helper: read all theme values from localStorage and apply
   const applyThemeFromStorage = () => {
     const mode = localStorage.getItem('nectar-theme-mode') || 'dark';
-    const color = localStorage.getItem('nectar-theme-color') || '#007aff';
+    const color = localStorage.getItem('nectar-theme-color') || '#b51f2e';
     const opacity = parseFloat(localStorage.getItem('nectar-theme-opacity') || '0.80');
     const saturation = parseFloat(localStorage.getItem('nectar-theme-saturation') || '0.50');
     const brightness = parseFloat(localStorage.getItem('nectar-theme-brightness') || '0.15');

@@ -1,0 +1,463 @@
+/* ============================================================================
+   BloodWing notch theme layer
+   ----------------------------------------------------------------------------
+   Loaded after src/App.css (see src/main.tsx) so it can restyle the notch
+   without touching layout logic. Geometry (width/height/radius) is animated by
+   framer-motion in src/App.tsx and is intentionally left alone here.
+   ========================================================================== */
+
+@import "./bloodwing.css";
+
+/* ── Shell ─────────────────────────────────────────────────────────────── */
+
+.nectar {
+    --notch-bg: var(--nectar-bg, rgba(11, 12, 15, 0.82));
+    font-family: var(--bw-font);
+    padding: 0 14px;
+    background:
+        var(--bw-accent-hairline) top center / 100% 1px no-repeat,
+        var(--bw-glass-sheen),
+        var(--notch-bg);
+    box-shadow:
+        var(--bw-inset-hairline),
+        0 10px 30px rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(24px) saturate(1.35);
+    -webkit-backdrop-filter: blur(24px) saturate(1.35);
+    transition:
+        background var(--bw-duration-slow) var(--bw-ease-standard),
+        box-shadow var(--bw-duration-base) var(--bw-ease-standard);
+}
+
+.nectar.expanded {
+    --notch-bg: var(--nectar-bg-expanded, rgba(21, 23, 28, 0.92));
+    box-shadow:
+        var(--bw-inset-hairline-strong),
+        0 18px 46px rgba(0, 0, 0, 0.52);
+}
+
+.light-mode .nectar {
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.8),
+        0 10px 30px rgba(0, 0, 0, 0.16);
+}
+
+.light-mode .nectar.expanded {
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        0 18px 46px rgba(0, 0, 0, 0.2);
+}
+
+/* ── Typography ────────────────────────────────────────────────────────── */
+
+.time {
+    font-weight: 600;
+    letter-spacing: 0.1px;
+    font-variant-numeric: tabular-nums;
+}
+
+.passive-feature {
+    color: var(--nectar-text, var(--bw-text));
+    transition: color var(--bw-duration-fast) var(--bw-ease-standard);
+}
+
+.passive-feature .label {
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
+.marquee-content {
+    color: var(--nectar-text, var(--bw-text));
+    font-weight: 500;
+    letter-spacing: -0.1px;
+}
+
+.marquee-content .artist {
+    color: var(--nectar-text-muted, var(--bw-text-muted));
+    opacity: 1;
+}
+
+.bottom-row {
+    border-top: 1px solid var(--bw-hairline);
+}
+
+/* ── Compact media player ──────────────────────────────────────────────── */
+
+.cmp-title,
+.premium-title {
+    font-weight: 600;
+    letter-spacing: -0.2px;
+}
+
+.cmp-artist,
+.premium-artist {
+    color: var(--nectar-text-muted, var(--bw-text-muted));
+}
+
+.cmp-art {
+    border-radius: var(--bw-radius-md);
+    box-shadow: var(--bw-shadow-2), 0 0 0 1px var(--bw-border);
+}
+
+.cmp-art-placeholder,
+.album-art-placeholder,
+.art-placeholder-mini {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.02) 100%);
+    color: var(--nectar-text-muted, var(--bw-text-muted));
+}
+
+.premium-album-art {
+    border-radius: 14px;
+    border: 1px solid var(--bw-border);
+    box-shadow: var(--bw-shadow-3), var(--bw-inset-hairline);
+    background: var(--nectar-group-bg, rgba(255, 255, 255, 0.04));
+}
+
+.album-art {
+    border-radius: 7px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.album-art:hover {
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.album-art.album-art-large {
+    border-radius: 9px;
+}
+
+/* Playback controls: quiet until hovered, then a restrained red halo. */
+.cmp-btn,
+.sleek-btn {
+    transition:
+        opacity var(--bw-duration-fast) var(--bw-ease-standard),
+        background-color var(--bw-duration-fast) var(--bw-ease-standard),
+        transform var(--bw-duration-fast) var(--bw-ease-emphasized);
+}
+
+.cmp-btn:hover,
+.sleek-btn:hover {
+    background: var(--bw-accent-soft);
+}
+
+.cmp-btn:active,
+.sleek-btn:active {
+    transform: scale(0.93);
+}
+
+.cmp-play:hover,
+.play-pause-btn-floating:hover {
+    background: var(--bw-accent-soft);
+}
+
+.cmp-track-bar,
+.cmp-volume-track,
+.slider-track-premium {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.cmp-track-fill,
+.cmp-volume-fill,
+.slider-progress-fill {
+    background: var(--nectar-accent, var(--bw-accent));
+    box-shadow: 0 0 8px rgba(181, 31, 46, 0.35);
+}
+
+.cmp-seek::-webkit-slider-thumb {
+    background: var(--nectar-accent, var(--bw-accent));
+}
+
+.cmp-output-item {
+    border-radius: var(--bw-radius-sm);
+}
+
+.cmp-output-item:hover {
+    background: var(--nectar-group-bg, rgba(255, 255, 255, 0.06));
+}
+
+.cmp-output-item.active {
+    color: var(--nectar-text, var(--bw-text));
+}
+
+.cmp-output-item.active .cmp-output-check {
+    color: var(--nectar-accent, var(--bw-accent));
+    opacity: 1;
+}
+
+/* Visualizer bars pick up the accent instead of flat white. */
+.visualizer-horizontal .bar-horizontal {
+    background: var(--nectar-text, var(--bw-text));
+    box-shadow: none;
+}
+
+.music-mode .visualizer-horizontal .bar-horizontal,
+.expanded-music-container .visualizer-horizontal .bar-horizontal {
+    background: var(--nectar-accent, var(--bw-accent));
+}
+
+/* ── Command center ────────────────────────────────────────────────────── */
+
+.cc-pill-tile {
+    border-radius: var(--bw-radius-md);
+    border: 1px solid var(--bw-hairline);
+    background: var(--nectar-group-bg, rgba(255, 255, 255, 0.045));
+    transition:
+        background-color var(--bw-duration-fast) var(--bw-ease-standard),
+        border-color var(--bw-duration-fast) var(--bw-ease-standard),
+        transform var(--bw-duration-fast) var(--bw-ease-emphasized);
+}
+
+.cc-pill-tile:hover {
+    background: var(--bw-accent-soft);
+    border-color: var(--bw-accent-line);
+    transform: translateY(-1px);
+}
+
+.cc-pill-tile.active {
+    background: var(--nectar-accent, var(--bw-accent));
+    border-color: var(--nectar-accent, var(--bw-accent));
+    box-shadow: var(--bw-shadow-accent), var(--bw-inset-hairline-strong);
+}
+
+.cc-pill-tile.active .cc-pill-title {
+    color: #ffffff;
+}
+
+.cc-pill-tile.active .cc-pill-status {
+    color: rgba(255, 255, 255, 0.78);
+}
+
+.cc-pill-tile.active .cc-pill-icon-wrapper {
+    background: rgba(0, 0, 0, 0.22);
+    color: #ffffff;
+}
+
+.cc-pill-icon-wrapper {
+    background: var(--nectar-group-bg, rgba(255, 255, 255, 0.07));
+    color: var(--nectar-text, var(--bw-text));
+}
+
+.cc-circular-btn {
+    background: var(--nectar-group-bg, rgba(255, 255, 255, 0.045));
+    border: 1px solid var(--bw-hairline);
+    color: var(--nectar-text-muted, var(--bw-text-muted));
+    transition:
+        background-color var(--bw-duration-fast) var(--bw-ease-standard),
+        border-color var(--bw-duration-fast) var(--bw-ease-standard),
+        color var(--bw-duration-fast) var(--bw-ease-standard),
+        transform var(--bw-duration-fast) var(--bw-ease-emphasized);
+}
+
+.cc-circular-btn:hover {
+    background: var(--bw-accent-soft);
+    border-color: var(--bw-accent-line);
+    color: var(--nectar-text, var(--bw-text));
+    transform: translateY(-1px);
+}
+
+.cc-circular-btn:active {
+    transform: scale(0.94);
+}
+
+.cc-circular-btn.active {
+    background: var(--nectar-accent, var(--bw-accent));
+    border-color: var(--nectar-accent, var(--bw-accent));
+    color: #ffffff;
+    box-shadow: var(--bw-shadow-accent);
+}
+
+.cc-circular-btn.active:hover {
+    background: var(--bw-accent-hover);
+}
+
+.cc-classic-slider-track {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.cc-classic-fill {
+    background: var(--nectar-accent, var(--bw-accent));
+}
+
+.cc-classic-slider-row:hover .cc-classic-fill {
+    background: var(--bw-accent-hover);
+    box-shadow: 0 0 6px rgba(181, 31, 46, 0.4);
+}
+
+.cc-classic-percentage {
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── Calendar, timer and stopwatch in the notch ────────────────────────── */
+
+.cal-views,
+.clock-tabs {
+    background: var(--nectar-group-bg, rgba(255, 255, 255, 0.06));
+    border: 1px solid var(--bw-hairline);
+    border-radius: var(--bw-radius-sm);
+}
+
+.cal-views button.active,
+.clock-tabs button.active {
+    background: var(--nectar-accent, var(--bw-accent));
+    color: #ffffff;
+    box-shadow: var(--bw-inset-hairline);
+}
+
+.cal-nav:hover,
+.cal-open:hover,
+.cal-today:hover {
+    background: var(--nectar-group-bg, rgba(255, 255, 255, 0.1));
+}
+
+.cal-today {
+    background: var(--nectar-group-bg, rgba(255, 255, 255, 0.08));
+    border-radius: var(--bw-radius-xs);
+}
+
+.calendar-day {
+    border-radius: var(--bw-radius-xs);
+}
+
+.calendar-day.today {
+    background: var(--nectar-accent, var(--bw-accent));
+    color: #ffffff;
+    box-shadow: var(--bw-shadow-accent);
+}
+
+.calendar-day.selected:not(.today) {
+    background: var(--bw-accent-soft);
+    box-shadow: inset 0 0 0 1.5px var(--nectar-accent, var(--bw-accent));
+    color: var(--nectar-text, var(--bw-text));
+}
+
+.calendar-day.selected.today {
+    box-shadow:
+        0 0 0 2px var(--nectar-bg-expanded, #0b0c0f),
+        0 0 0 3.5px var(--nectar-accent, var(--bw-accent));
+}
+
+.calendar-day.has-events:not(.today) {
+    box-shadow: inset 0 0 0 1px var(--bw-border-strong);
+}
+
+.calendar-day.lvl-1:not(.today) {
+    background: color-mix(in srgb, var(--nectar-text, #f3f4f6) 10%, transparent);
+}
+
+.calendar-day.lvl-2:not(.today) {
+    background: color-mix(in srgb, var(--nectar-text, #f3f4f6) 18%, transparent);
+}
+
+.calendar-day.lvl-3:not(.today) {
+    background: color-mix(in srgb, var(--nectar-text, #f3f4f6) 26%, transparent);
+}
+
+.cal-week-row.today {
+    background: var(--bw-accent-soft);
+}
+
+.cal-week-row.today .cal-week-label b {
+    background: var(--nectar-accent, var(--bw-accent));
+    color: #ffffff;
+}
+
+.cal-chip,
+.cal-day-event {
+    border-radius: var(--bw-radius-xs);
+}
+
+.cal-day-title em {
+    background: var(--bw-danger);
+}
+
+.timer-btn {
+    border-radius: var(--bw-radius-sm);
+    transition:
+        background-color var(--bw-duration-fast) var(--bw-ease-standard),
+        transform var(--bw-duration-fast) var(--bw-ease-emphasized);
+}
+
+.timer-btn.primary {
+    background: var(--nectar-accent, var(--bw-accent));
+    color: #ffffff;
+    box-shadow: var(--bw-shadow-accent);
+}
+
+.timer-btn.primary:hover {
+    background: var(--bw-accent-hover);
+}
+
+.timer-btn.secondary {
+    background: var(--nectar-group-bg, rgba(255, 255, 255, 0.06));
+    border: 1px solid var(--bw-hairline);
+    color: var(--nectar-text, var(--bw-text));
+}
+
+.timer-btn:active {
+    transform: scale(0.97);
+}
+
+.preset-btn-small {
+    border-radius: var(--bw-radius-sm);
+    border: 1px solid var(--bw-hairline);
+    background: var(--nectar-group-bg, rgba(255, 255, 255, 0.045));
+    transition:
+        background-color var(--bw-duration-fast) var(--bw-ease-standard),
+        border-color var(--bw-duration-fast) var(--bw-ease-standard);
+}
+
+.preset-btn-small:hover {
+    background: var(--bw-accent-soft);
+    border-color: var(--bw-accent-line);
+}
+
+.timer-custom input:focus {
+    border-color: var(--nectar-accent, var(--bw-accent));
+}
+
+.timer-custom button {
+    background: var(--nectar-accent, var(--bw-accent));
+    color: #ffffff;
+}
+
+.timer-finished {
+    color: var(--bw-danger) !important;
+}
+
+.sw-lap {
+    border-radius: var(--bw-radius-xs);
+    background: var(--nectar-group-bg, rgba(255, 255, 255, 0.06));
+}
+
+/* ── Pulses and status accents ─────────────────────────────────────────── */
+
+.update-activity-glow,
+.green-pulse {
+    background: var(--bw-success-soft);
+    border-color: rgba(63, 185, 80, 0.35);
+    box-shadow: 0 0 8px rgba(63, 185, 80, 0.22);
+}
+
+.power-pulse-content .label {
+    color: var(--nectar-text, var(--bw-text));
+    font-weight: 600;
+}
+
+/* ── Screen corner masks ───────────────────────────────────────────────── */
+
+.screen-corner {
+    background: var(--bw-bg);
+}
+
+.light-mode .screen-corner {
+    background: #ffffff;
+}
+
+/* ── Reduced motion: keep the shell legible without animated ambience ──── */
+
+html.bw-reduce-motion .notch-ambient-glow img {
+    transition: none !important;
+}
+
+html.bw-motion-minimal .notch-ambient-glow {
+    display: none;
+}

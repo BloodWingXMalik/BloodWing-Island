@@ -1,0 +1,275 @@
+/* ============================================================================
+   BloodWing calendar theme layer
+   ----------------------------------------------------------------------------
+   Loaded after src/Calendar.css (see src/Calendar.tsx). Restyles the standalone
+   calendar window; event colors (--c) stay with the calendar sources.
+   ========================================================================== */
+
+@import "./bloodwing.css";
+
+:root {
+    --cw-bg: rgba(11, 12, 15, 0.78);
+    --cw-bar: rgba(255, 255, 255, 0.03);
+    --cw-bar-line: var(--bw-hairline);
+    --cw-title: var(--bw-text-muted);
+    --cw-line: var(--bw-border);
+    --cw-inverse: var(--nectar-bg-expanded, #15171c);
+}
+
+.light-mode {
+    --cw-bg: rgba(248, 248, 250, 0.78);
+    --cw-line: rgba(0, 0, 0, 0.1);
+    --cw-bar: rgba(0, 0, 0, 0.02);
+    --cw-bar-line: rgba(0, 0, 0, 0.06);
+    --cw-title: rgba(0, 0, 0, 0.6);
+}
+
+body {
+    font-family: var(--bw-font);
+}
+
+/* ── Window shell ─────────────────────────────────────────────────────────── */
+
+.cw {
+    border-radius: 14px;
+    background:
+        var(--bw-accent-hairline) top center / 100% 1px no-repeat,
+        var(--bw-glass-sheen),
+        var(--cw-bg);
+    border: 1px solid var(--cw-line);
+    box-shadow:
+        var(--bw-inset-hairline),
+        0 18px 50px rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(28px) saturate(1.4);
+    -webkit-backdrop-filter: blur(28px) saturate(1.4);
+}
+
+.light-mode .cw {
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.85),
+        0 18px 50px rgba(0, 0, 0, 0.2);
+}
+
+.cw-titlebar {
+    height: 38px;
+    background: var(--cw-bar);
+    border-bottom: 1px solid var(--cw-bar-line);
+}
+
+.cw-title-text {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--cw-title);
+}
+
+.cw-body {
+    background: transparent;
+}
+
+/* ── Sidebar ──────────────────────────────────────────────────────────────── */
+
+.cw-sidebar {
+    background: rgba(255, 255, 255, 0.018);
+    border-right: 1px solid var(--cw-line);
+}
+
+.light-mode .cw-sidebar {
+    background: rgba(0, 0, 0, 0.012);
+}
+
+.cw-label {
+    letter-spacing: 0.07em;
+    color: var(--bw-text-faint);
+}
+
+.cw-sources button {
+    border-radius: 8px;
+    transition: background-color var(--bw-duration-fast) var(--bw-ease-standard);
+}
+
+.cw-sources button:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.cw-check {
+    border-radius: 5px;
+    transition:
+        background-color var(--bw-duration-fast) var(--bw-ease-standard),
+        border-color var(--bw-duration-fast) var(--bw-ease-standard);
+}
+
+.cw-sync-row button,
+.cw-manage {
+    border-radius: 8px;
+    transition:
+        background-color var(--bw-duration-fast) var(--bw-ease-standard),
+        border-color var(--bw-duration-fast) var(--bw-ease-standard);
+}
+
+.cw-sync-row button:hover:not(:disabled),
+.cw-manage:hover {
+    background: var(--bw-accent-soft);
+    border-color: var(--bw-accent-line);
+}
+
+.cw-error {
+    color: var(--bw-danger);
+}
+
+/* ── Toolbar: segment, navigation, primary button ─────────────────────────── */
+
+.cw-segment {
+    border-radius: 9px;
+    background: var(--nectar-group-bg, rgba(255, 255, 255, 0.06));
+    border: 1px solid var(--bw-hairline);
+}
+
+.cw-segment button {
+    border-radius: 7px;
+    transition:
+        background-color var(--bw-duration-fast) var(--bw-ease-standard),
+        opacity var(--bw-duration-fast) var(--bw-ease-standard);
+}
+
+.cw-segment button.active {
+    background: var(--nectar-accent, var(--bw-accent));
+    color: #ffffff;
+    box-shadow: var(--bw-inset-hairline);
+}
+
+.cw-nav button {
+    border-radius: 7px;
+    transition: background-color var(--bw-duration-fast) var(--bw-ease-standard);
+}
+
+.cw-nav button:hover {
+    background: var(--bw-accent-soft);
+}
+
+.cw-nav .cw-today {
+    background: var(--nectar-group-bg, rgba(255, 255, 255, 0.08));
+    border: 1px solid var(--bw-hairline);
+}
+
+.cw-nav .cw-today:hover {
+    background: var(--bw-accent-soft);
+    border-color: var(--bw-accent-line);
+}
+
+.cw-primary {
+    border-radius: 9px;
+    background: var(--nectar-accent, var(--bw-accent));
+    color: #ffffff;
+    box-shadow: var(--bw-shadow-accent);
+    transition:
+        background-color var(--bw-duration-fast) var(--bw-ease-standard),
+        transform var(--bw-duration-fast) var(--bw-ease-emphasized);
+}
+
+.cw-primary:hover {
+    filter: none;
+    background: var(--bw-accent-hover);
+}
+
+.cw-primary:active {
+    transform: scale(0.97);
+}
+
+.cw-selected-strip {
+    border-radius: 11px;
+    background: var(--bw-accent-soft);
+    border: 1px solid var(--bw-accent-line);
+}
+
+/* ── Month grid ───────────────────────────────────────────────────────────── */
+
+.cw-dow {
+    color: var(--bw-text-faint);
+}
+
+.cw-cell {
+    transition: background var(--bw-duration-fast) var(--bw-ease-standard);
+}
+
+.cw-cell:hover::before {
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.cw-cell.selected::before {
+    background: var(--bw-accent-soft);
+    box-shadow: inset 0 0 0 1.5px var(--nectar-accent, var(--bw-accent));
+}
+
+.cw-cell.selected .cw-daynum:not(.today) {
+    background: transparent;
+    color: var(--nectar-text, var(--bw-text));
+}
+
+.cw-daynum {
+    font-variant-numeric: tabular-nums;
+}
+
+.cw-daynum.today {
+    background: var(--nectar-accent, var(--bw-accent));
+    color: #ffffff;
+    box-shadow: var(--bw-shadow-accent);
+}
+
+.cw-more {
+    color: var(--bw-text-faint);
+}
+
+/* ── Week and day views ───────────────────────────────────────────────────── */
+
+.cw-week-col.today {
+    background: var(--bw-accent-soft);
+}
+
+.cw-week-head:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.cw-week-head em {
+    color: var(--bw-text-faint);
+}
+
+.cw-day-event {
+    border-radius: 8px;
+}
+
+.cw-day-time b {
+    font-variant-numeric: tabular-nums;
+}
+
+.cw-day-title em {
+    background: var(--bw-danger);
+}
+
+.cw-agenda-heading:hover {
+    background: var(--bw-accent-soft);
+}
+
+.cw-empty-title {
+    color: var(--nectar-text, var(--bw-text));
+}
+
+/* ── Hover popup ──────────────────────────────────────────────────────────── */
+
+.cw-hover {
+    border-radius: 12px;
+    border: 1px solid var(--bw-border);
+    background: rgba(21, 23, 28, 0.94);
+    backdrop-filter: blur(24px) saturate(1.4);
+    -webkit-backdrop-filter: blur(24px) saturate(1.4);
+    box-shadow: var(--bw-shadow-3);
+}
+
+.light-mode .cw-hover {
+    background: rgba(250, 250, 252, 0.95);
+}
+
+.cw-hover-title {
+    font-weight: 650;
+}

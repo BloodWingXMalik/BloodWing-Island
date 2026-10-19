@@ -1,0 +1,132 @@
+/* ============================================================================
+   BloodWing overlay theme layer
+   ----------------------------------------------------------------------------
+   Loaded after src/Overlay.css (see src/Overlay.tsx). Restyles the volume /
+   brightness edge notches, the app volume mixer and the splash cards.
+
+   Note: the concave corner "flares" paint themselves with var(--nectar-bg), so
+   that variable must stay a real color. It is written by src/theme.ts.
+   ========================================================================== */
+
+@import "./bloodwing.css";
+
+/* ── Edge notches ─────────────────────────────────────────────────────────── */
+
+.volume-notch {
+    background:
+        var(--bw-accent-hairline) right center / 1px 100% no-repeat,
+        var(--bw-glass-sheen),
+        var(--nectar-bg, rgba(11, 12, 15, 0.84));
+    border-radius: 0 18px 18px 0;
+    border: 1px solid var(--nectar-border, var(--bw-border));
+    border-left: none;
+    box-shadow:
+        var(--bw-inset-hairline),
+        12px 0 32px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(26px) saturate(1.4);
+    -webkit-backdrop-filter: blur(26px) saturate(1.4);
+}
+
+.brightness-notch {
+    background:
+        var(--bw-accent-hairline) left center / 1px 100% no-repeat,
+        var(--bw-glass-sheen),
+        var(--nectar-bg, rgba(11, 12, 15, 0.84));
+    border-radius: 18px 0 0 18px;
+    border: 1px solid var(--nectar-border, var(--bw-border));
+    border-right: none;
+    box-shadow:
+        var(--bw-inset-hairline),
+        -12px 0 32px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(26px) saturate(1.4);
+    -webkit-backdrop-filter: blur(26px) saturate(1.4);
+}
+
+.volume-notch-bar,
+.brightness-notch-bar,
+.volume-mixer-bar {
+    background: rgba(255, 255, 255, 0.13);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.volume-notch-fill,
+.brightness-notch-fill,
+.volume-mixer-fill {
+    background: var(--nectar-accent, var(--bw-accent));
+    box-shadow: 0 0 10px rgba(181, 31, 46, 0.4);
+}
+
+.volume-notch-action,
+.volume-mixer-action {
+    color: var(--nectar-text, var(--bw-text));
+    transition: color var(--bw-duration-fast) var(--bw-ease-standard);
+}
+
+.volume-notch-action:hover .volume-notch-action-icon,
+.volume-notch-action:hover .volume-notch-action-mixer,
+.volume-mixer-action:hover img,
+.volume-mixer-action:hover .volume-mixer-action-fallback {
+    color: var(--nectar-accent, var(--bw-accent));
+}
+
+.volume-notch-action.active .volume-notch-action-icon,
+.volume-notch-action.active .volume-notch-action-mixer {
+    color: var(--nectar-accent, var(--bw-accent));
+}
+
+.brightness-notch-icon {
+    color: var(--nectar-text, var(--bw-text));
+}
+
+.volume-mixer-action-fallback {
+    background: var(--nectar-group-bg, rgba(255, 255, 255, 0.12));
+    border-radius: 6px;
+}
+
+/* ── Splash and update cards ──────────────────────────────────────────────── */
+
+.splash-logo {
+    filter: drop-shadow(0 0 24px rgba(181, 31, 46, 0.45));
+}
+
+.update-splash-card {
+    background:
+        var(--bw-accent-hairline) top center / 100% 1px no-repeat,
+        var(--bw-glass-sheen),
+        var(--nectar-bg-expanded, rgba(21, 23, 28, 0.94));
+    border: 1px solid var(--bw-border);
+    border-radius: 20px;
+    box-shadow:
+        var(--bw-inset-hairline-strong),
+        var(--bw-shadow-3);
+    backdrop-filter: blur(28px) saturate(1.4);
+    -webkit-backdrop-filter: blur(28px) saturate(1.4);
+}
+
+.update-progress-bar {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.update-progress-fill {
+    background: var(--nectar-accent, var(--bw-accent));
+    box-shadow: 0 0 8px rgba(181, 31, 46, 0.5);
+}
+
+/* ── Light mode ───────────────────────────────────────────────────────────── */
+
+.light-mode .volume-notch,
+.light-mode .brightness-notch {
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.85),
+        0 12px 32px rgba(0, 0, 0, 0.16);
+}
+
+.light-mode .volume-notch-bar,
+.light-mode .brightness-notch-bar,
+.light-mode .volume-mixer-bar {
+    background: rgba(0, 0, 0, 0.14);
+}
+
+.light-mode .update-progress-bar {
+    background: rgba(0, 0, 0, 0.12);
+}

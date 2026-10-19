@@ -1,0 +1,189 @@
+/* ============================================================================
+   BloodWing design layer
+   ----------------------------------------------------------------------------
+   Single source of truth for the BloodWing visual identity: palette, glass
+   surfaces, typography, motion and interaction states.
+
+   Every window (notch, dock, settings, calendar, overlay) imports this file
+   first, so a token changed here changes the whole application consistently.
+
+   Runtime color values (--nectar-*) are still written by src/theme.ts, because
+   they depend on the user's theme settings. The values below are static
+   building blocks plus sensible fallbacks for the first paint.
+   ========================================================================== */
+
+@font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url("/fonts/inter-latin.woff2") format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+        U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+        U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url("/fonts/inter-latin-ext.woff2") format("woff2");
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+        U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+        U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+    /* Brand palette */
+    --bw-bg: #0b0c0f;
+    --bw-surface: #15171c;
+    --bw-surface-2: #1d2027;
+    --bw-surface-3: #262a33;
+    --bw-accent: #b51f2e;
+    --bw-accent-hover: #d02c3d;
+    --bw-accent-deep: #8e1622;
+    --bw-accent-soft: rgba(181, 31, 46, 0.16);
+    --bw-accent-line: rgba(208, 44, 61, 0.42);
+    --bw-text: #f3f4f6;
+    --bw-text-muted: #a0a5b0;
+    --bw-text-faint: rgba(160, 165, 176, 0.55);
+    --bw-border: rgba(255, 255, 255, 0.08);
+    --bw-border-strong: rgba(255, 255, 255, 0.14);
+    --bw-hairline: rgba(255, 255, 255, 0.055);
+
+    /* Status colors */
+    --bw-success: #3fb950;
+    --bw-success-soft: rgba(63, 185, 80, 0.16);
+    --bw-warning: #e3b341;
+    --bw-danger: #e5484d;
+    --bw-danger-soft: rgba(229, 72, 77, 0.16);
+
+    /* Radii */
+    --bw-radius-xs: 6px;
+    --bw-radius-sm: 8px;
+    --bw-radius-md: 12px;
+    --bw-radius-lg: 16px;
+    --bw-radius-xl: 22px;
+    --bw-radius-pill: 999px;
+
+    /* Elevation */
+    --bw-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.32);
+    --bw-shadow-2: 0 6px 18px rgba(0, 0, 0, 0.42);
+    --bw-shadow-3: 0 16px 44px rgba(0, 0, 0, 0.55);
+    --bw-shadow-accent: 0 6px 20px rgba(181, 31, 46, 0.28);
+    --bw-inset-hairline: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    --bw-inset-hairline-strong: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+
+    /* Glass recipes */
+    --bw-glass-sheen: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.065) 0%,
+        rgba(255, 255, 255, 0.018) 42%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    --bw-glass-sheen-strong: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.09) 0%,
+        rgba(255, 255, 255, 0.028) 48%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    --bw-glass-edge: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.16) 22%,
+        rgba(255, 255, 255, 0.16) 78%,
+        transparent 100%
+    );
+    --bw-accent-hairline: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(208, 44, 61, 0.55) 30%,
+        rgba(208, 44, 61, 0.55) 70%,
+        transparent 100%
+    );
+
+    /* Typography */
+    --bw-font: "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui,
+        -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    --bw-font-display: "Inter", "Segoe UI Variable Display", "Segoe UI", system-ui,
+        -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+
+    /* Motion */
+    --bw-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+    --bw-ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+    --bw-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+    --bw-duration-fast: 120ms;
+    --bw-duration-base: 200ms;
+    --bw-duration-slow: 320ms;
+    --bw-motion-scale: 1;
+}
+
+/* Motion intensity: "balanced" trims decorative loops, "minimal" also
+   shortens the functional transitions. Springs driven by framer-motion are
+   handled in src/motion.tsx. */
+html.bw-motion-balanced {
+    --bw-motion-scale: 0.85;
+}
+
+html.bw-motion-minimal {
+    --bw-motion-scale: 0.55;
+    --bw-duration-fast: 80ms;
+    --bw-duration-base: 120ms;
+    --bw-duration-slow: 160ms;
+}
+
+html.bw-motion-balanced .marquee-content.should-animate,
+html.bw-motion-balanced .premium-title.marquee,
+html.bw-motion-balanced .cmp-marquee,
+html.bw-motion-minimal .marquee-content.should-animate,
+html.bw-motion-minimal .premium-title.marquee,
+html.bw-motion-minimal .cmp-marquee {
+    animation: none !important;
+}
+
+html.bw-motion-minimal .notch-ambient-glow img,
+html.bw-motion-minimal .album-art-glow-bg {
+    filter: blur(28px) saturate(1.6) brightness(0.9) !important;
+    transition: none !important;
+}
+
+/* Reduced motion: decorative animation stops entirely, functional state
+   changes stay instant instead of animated. */
+html.bw-reduce-motion *,
+html.bw-reduce-motion *::before,
+html.bw-reduce-motion *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+}
+
+html.bw-reduce-motion .marquee-content.should-animate,
+html.bw-reduce-motion .premium-title.marquee,
+html.bw-reduce-motion .cmp-marquee,
+html.bw-reduce-motion .timer-finished,
+html.bw-reduce-motion .popup-skeleton-box,
+html.bw-reduce-motion .popup-skeleton-line,
+html.bw-reduce-motion .notch-ambient-glow img {
+    animation: none !important;
+}
+
+/* Keyboard focus: one visible, on-brand ring for every interactive element. */
+:focus-visible {
+    outline: 2px solid var(--nectar-accent, var(--bw-accent));
+    outline-offset: 2px;
+    border-radius: var(--bw-radius-xs);
+}
+
+button:focus:not(:focus-visible),
+input:focus:not(:focus-visible),
+[role="button"]:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Thin, neutral scrollbars everywhere. */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--nectar-scrollbar-thumb, rgba(255, 255, 255, 0.12)) transparent;
+}

@@ -9,6 +9,8 @@ import { getVersion } from "@tauri-apps/api/app";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { MixerIcon, SpeakerIcon } from "./icons";
 import "./Overlay.css";
+import "./overlay-theme.css";
+import { MotionProvider, initMotionPreference } from "./motion";
 import { initTheme } from "./theme";
 
 // ─── App Volume Mixer ───────────────────────────────────────────────────────
@@ -941,8 +943,13 @@ function OverlayApp() {
   );
 }
 
+// Apply the motion preference before the first paint to avoid a flash.
+initMotionPreference();
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <OverlayApp />
+    <MotionProvider>
+      <OverlayApp />
+    </MotionProvider>
   </StrictMode>
 );

@@ -9,6 +9,8 @@ import { WindowControls } from "./components/WindowControls";
 import { initTheme } from "./theme";
 import { useCaldav, type CalEvent } from "./hooks/useCaldav";
 import "./Calendar.css";
+import "./calendar-theme.css";
+import { MotionProvider, initMotionPreference } from "./motion";
 
 type View = "day" | "week" | "month" | "agenda";
 
@@ -520,8 +522,13 @@ function AgendaView({ today, events, time, onOpen }: { today: Date; events: CalE
   );
 }
 
+// Apply the motion preference before the first paint to avoid a flash.
+initMotionPreference();
+
 createRoot(document.getElementById("root") as HTMLElement).render(
   <StrictMode>
-    <CalendarWindow />
+    <MotionProvider>
+      <CalendarWindow />
+    </MotionProvider>
   </StrictMode>,
 );

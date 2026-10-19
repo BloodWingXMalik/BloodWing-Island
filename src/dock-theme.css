@@ -1,0 +1,374 @@
+/* ============================================================================
+   BloodWing dock theme layer
+   ----------------------------------------------------------------------------
+   Loaded after src/Dock.css (see src/dock-main.tsx). Hover/scale motion stays
+   with framer-motion in src/Dock.tsx; this file only restyles surfaces, states
+   and indicators.
+   ========================================================================== */
+
+@import "./bloodwing.css";
+
+/* ── Dock shell ────────────────────────────────────────────────────────── */
+
+.dock-container {
+    font-family: var(--bw-font);
+}
+
+.dock {
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 20px 20px 0 0;
+    background:
+        var(--bw-accent-hairline) top center / 100% 1px no-repeat,
+        var(--bw-glass-sheen-strong),
+        var(--nectar-bg, rgba(11, 12, 15, 0.84));
+    border-top: 1px solid var(--bw-hairline);
+    box-shadow:
+        var(--bw-inset-hairline),
+        0 -12px 34px rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(28px) saturate(1.5);
+    -webkit-backdrop-filter: blur(28px) saturate(1.5);
+    transition: padding var(--bw-duration-slow) var(--bw-ease-emphasized);
+}
+
+.dock.dock-impacted {
+    padding: 9px 16px;
+}
+
+.dock-reorder-container,
+.dock-reorder-group {
+    gap: 10px;
+}
+
+.dock-group-divider {
+    width: 1px;
+    margin: 7px 3px;
+    background: linear-gradient(
+        180deg,
+        transparent 0%,
+        var(--bw-border-strong) 28%,
+        var(--bw-border-strong) 72%,
+        transparent 100%
+    );
+}
+
+.light-mode .dock {
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.85),
+        0 -12px 34px rgba(0, 0, 0, 0.16);
+}
+
+/* ── Icons ─────────────────────────────────────────────────────────────── */
+
+.dock-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 13px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%);
+    box-shadow:
+        var(--bw-inset-hairline),
+        0 3px 10px rgba(0, 0, 0, 0.22);
+    border: 1px solid var(--bw-hairline);
+    transition:
+        background-color var(--bw-duration-base) var(--bw-ease-standard),
+        border-color var(--bw-duration-base) var(--bw-ease-standard),
+        box-shadow var(--bw-duration-base) var(--bw-ease-standard);
+}
+
+.dock-icon img {
+    width: 28px;
+    height: 28px;
+}
+
+.dock-icon .nectar-icon-img {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+}
+
+.dock-icon svg {
+    width: 24px;
+    height: 24px;
+    stroke: var(--nectar-text, var(--bw-text));
+}
+
+/* Hover feedback: the lift/scale is animated by framer-motion, so this only
+   paints the surface. */
+.dock-icon-wrapper:hover .dock-icon {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.05) 100%);
+    border-color: var(--bw-border-strong);
+    box-shadow:
+        var(--bw-inset-hairline-strong),
+        0 6px 16px rgba(0, 0, 0, 0.32);
+}
+
+.dock-container:not(.dragging) .dock-icon-wrapper:hover .dock-icon {
+    border-color: var(--bw-accent-line);
+}
+
+.dock-icon-only .dock-icon {
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.dock-icon-only .dock-icon img {
+    width: 32px;
+    height: 32px;
+}
+
+.dock-icon-only .dock-icon-wrapper:hover .dock-icon {
+    background: var(--bw-accent-soft);
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.fallback-icon {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--nectar-text-muted, var(--bw-text-muted));
+}
+
+/* ── Running indicators ────────────────────────────────────────────────── */
+
+.active-indicator {
+    width: 5px;
+    height: 5px;
+    bottom: -5px;
+    background: var(--nectar-accent, var(--bw-accent));
+    box-shadow: 0 0 6px rgba(181, 31, 46, 0.55);
+}
+
+.window-dots {
+    bottom: -5px;
+    gap: 4px;
+}
+
+.window-dots .active-indicator {
+    background: var(--nectar-accent, var(--bw-accent));
+    box-shadow: 0 0 5px rgba(181, 31, 46, 0.45);
+}
+
+/* ── Tooltips and window previews ──────────────────────────────────────── */
+
+.tooltip,
+[data-tooltip]::after {
+    background: rgba(21, 23, 28, 0.92);
+    border: 1px solid var(--bw-border);
+    border-radius: var(--bw-radius-sm);
+    color: var(--nectar-text, var(--bw-text));
+    font-family: var(--bw-font);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: -0.05px;
+    box-shadow: var(--bw-shadow-2);
+    backdrop-filter: blur(18px) saturate(1.4);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    padding: 5px 9px;
+}
+
+.preview-tooltip {
+    background: rgba(21, 23, 28, 0.9);
+    border: 1px solid var(--bw-border-strong);
+    border-radius: var(--bw-radius-lg);
+    box-shadow: var(--bw-shadow-3);
+    backdrop-filter: blur(26px) saturate(1.5);
+    -webkit-backdrop-filter: blur(26px) saturate(1.5);
+    padding: 10px;
+}
+
+.preview-item {
+    border-radius: var(--bw-radius-md);
+    border: 1px solid transparent;
+    transition:
+        background-color var(--bw-duration-fast) var(--bw-ease-standard),
+        border-color var(--bw-duration-fast) var(--bw-ease-standard),
+        transform var(--bw-duration-fast) var(--bw-ease-emphasized);
+}
+
+.preview-item:hover {
+    background: var(--bw-accent-soft);
+    border-color: var(--bw-accent-line);
+    transform: translateY(-3px);
+}
+
+.preview-item img {
+    border-radius: var(--bw-radius-sm);
+    box-shadow: var(--bw-shadow-2), 0 0 0 1px var(--bw-border);
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.preview-label {
+    color: var(--nectar-text, var(--bw-text));
+    font-size: 11.5px;
+    font-weight: 500;
+}
+
+.preview-close-btn {
+    background: rgba(21, 23, 28, 0.9);
+    box-shadow: inset 0 0 0 1px var(--bw-border-strong), var(--bw-shadow-1);
+}
+
+.preview-close-btn:hover {
+    background: var(--bw-danger);
+    box-shadow: inset 0 0 0 1px var(--bw-danger), 0 4px 12px rgba(229, 72, 77, 0.35);
+}
+
+/* ── Context menus ─────────────────────────────────────────────────────── */
+
+.context-menu,
+.submenu {
+    background: rgba(21, 23, 28, 0.94);
+    border: 1px solid var(--bw-border-strong);
+    border-radius: var(--bw-radius-md);
+    padding: 6px;
+    box-shadow: var(--bw-shadow-3);
+    backdrop-filter: blur(26px) saturate(1.5);
+    -webkit-backdrop-filter: blur(26px) saturate(1.5);
+}
+
+.menu-item {
+    padding: 8px 12px;
+    border-radius: var(--bw-radius-sm);
+    color: var(--nectar-text, var(--bw-text));
+    font-size: 12.5px;
+    font-weight: 500;
+    letter-spacing: -0.05px;
+    transition:
+        background-color var(--bw-duration-fast) var(--bw-ease-standard),
+        color var(--bw-duration-fast) var(--bw-ease-standard);
+}
+
+.menu-item:hover,
+.menu-item.has-submenu:hover,
+.menu-item.has-submenu .submenu .menu-item:hover {
+    background: var(--bw-accent-soft);
+    color: var(--nectar-text, var(--bw-text));
+}
+
+.menu-item.quit:hover,
+.menu-item.has-submenu .submenu .menu-item.quit:hover {
+    background: var(--bw-danger);
+    color: #ffffff;
+}
+
+.menu-divider {
+    background: var(--bw-hairline);
+    margin: 5px 8px;
+}
+
+.submenu-arrow {
+    opacity: 0.45;
+}
+
+/* ── Add-app popup ─────────────────────────────────────────────────────── */
+
+.add-app-popup {
+    background: rgba(21, 23, 28, 0.94);
+    border: 1px solid var(--bw-border-strong);
+    border-radius: var(--bw-radius-xl);
+    box-shadow:
+        0 -14px 44px rgba(0, 0, 0, 0.5),
+        var(--bw-inset-hairline);
+    backdrop-filter: blur(34px) saturate(1.6);
+    -webkit-backdrop-filter: blur(34px) saturate(1.6);
+}
+
+.popup-search-row {
+    border-radius: var(--bw-radius-md);
+    background: rgba(255, 255, 255, 0.055);
+    border: 1px solid var(--bw-hairline);
+}
+
+.popup-search-input {
+    font-size: 13.5px;
+    letter-spacing: -0.1px;
+}
+
+.popup-app-row {
+    border-radius: var(--bw-radius-md);
+    transition: background-color var(--bw-duration-fast) var(--bw-ease-standard);
+}
+
+.popup-app-row:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.popup-app-row.selected {
+    background: var(--bw-accent-soft);
+    box-shadow: inset 0 0 0 1px var(--bw-accent-line);
+}
+
+.popup-app-icon {
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--bw-hairline);
+}
+
+.popup-app-name {
+    font-size: 13.5px;
+    font-weight: 500;
+}
+
+.popup-section-label {
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    color: var(--bw-text-faint);
+}
+
+.popup-app-row.is-pinned .popup-app-pin {
+    color: var(--nectar-accent, var(--bw-accent));
+}
+
+/* ── Toast ─────────────────────────────────────────────────────────────── */
+
+.dock-toast {
+    background: rgba(21, 23, 28, 0.94);
+    border: 1px solid var(--bw-border-strong);
+    border-radius: var(--bw-radius-md);
+    color: var(--bw-danger);
+    font-size: 12px;
+    font-weight: 500;
+    box-shadow: var(--bw-shadow-3);
+    backdrop-filter: blur(22px) saturate(1.4);
+    -webkit-backdrop-filter: blur(22px) saturate(1.4);
+}
+
+/* ── Light mode ────────────────────────────────────────────────────────── */
+
+.light-mode .dock-icon {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.015) 100%);
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.light-mode .dock-icon-wrapper:hover .dock-icon {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.03) 100%);
+}
+
+.light-mode .tooltip,
+.light-mode [data-tooltip]::after,
+.light-mode .preview-tooltip,
+.light-mode .context-menu,
+.light-mode .submenu,
+.light-mode .add-app-popup,
+.light-mode .dock-toast {
+    background: rgba(252, 252, 253, 0.94);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: var(--nectar-text, #14161a);
+    box-shadow: var(--bw-shadow-2);
+}
+
+.light-mode .preview-label {
+    color: var(--nectar-text, #14161a);
+}
+
+.light-mode .menu-item {
+    color: var(--nectar-text, #14161a);
+}
+
+.light-mode .menu-item:hover {
+    background: var(--bw-accent-soft);
+    color: var(--nectar-text, #14161a);
+}

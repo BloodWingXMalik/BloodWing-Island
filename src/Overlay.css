@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+/* Inter is bundled locally (see src/bloodwing.css). No network font fetch. */
 
 /* Never start native image drags from the notch/player UI */
 img {
