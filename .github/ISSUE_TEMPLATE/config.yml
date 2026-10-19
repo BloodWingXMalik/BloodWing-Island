@@ -1,1 +1,11 @@
 blank_issues_enabled: false
+contact_links:
+  - name: Installation, upgrade and uninstall guide
+    url: https://github.com/BloodWingXMalik/BloodWing-Nectar/blob/HEAD/INSTALLATION.md
+    about: How to download, install, upgrade and remove BloodWing Nectar.
+  - name: Building from source
+    url: https://github.com/BloodWingXMalik/BloodWing-Nectar/blob/HEAD/BUILD.md
+    about: Prerequisites and the tested build/package steps for Windows.
+  - name: Upstream Nectar (shared core)
+    url: https://github.com/kua8/Nectar/issues
+    about: Bugs in shared notch/dock behaviour that also reproduce with upstream Nectar.

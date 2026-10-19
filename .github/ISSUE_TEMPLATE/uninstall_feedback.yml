@@ -1,23 +1,48 @@
 name: Uninstall feedback
-description: Tell us why you removed Nectar (opened from the uninstaller)
-title: "Uninstall feedback"
-labels: ["feedback"]
+description: Tell us why you removed BloodWing Nectar
+title: "[Uninstall]: "
+labels: ["uninstall-feedback"]
 body:
-  - type: input
+  - type: markdown
+    attributes:
+      value: |
+        Sorry to see you go — honest feedback about why you uninstalled is genuinely
+        useful. Please keep it free of personal data (no account names, email
+        addresses or calendar URLs).
+
+        If the uninstaller misbehaved (leftovers, taskbar not restored), that is worth
+        a [bug report](https://github.com/BloodWingXMalik/BloodWing-Nectar/issues/new?template=bug_report.yml)
+        instead.
+
+  - type: dropdown
     id: reason
     attributes:
-      label: Reason
-      description: Why did you uninstall?
+      label: Main reason for uninstalling
+      options:
+        - Features I need are missing
+        - Performance (CPU, memory, battery)
+        - Conflicts with my setup (multi-monitor, other taskbar tools)
+        - It broke something / felt risky
+        - Too complicated to configure
+        - I was just trying it out
+        - Something else
     validations:
       required: true
 
   - type: textarea
-    id: comment
+    id: details
     attributes:
-      label: Anything else you'd like to add?
-      description: Optional, but the more specific, the more useful.
+      label: Anything you would like to add?
+      description: What would have kept you using it? What should be fixed first?
+    validations:
+      required: false
 
-  - type: input
-    id: version
+  - type: checkboxes
+    id: shell
     attributes:
-      label: Nectar version
+      label: Uninstall behaviour (optional, helps verification)
+      options:
+        - label: The native Windows taskbar was restored correctly after uninstalling.
+          required: false
+        - label: The uninstaller left files, shortcuts or settings behind that it should not have.
+          required: false

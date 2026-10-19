@@ -1,12 +1,19 @@
 name: Feature request
-description: Suggest an idea or improvement for Nectar
+description: Suggest an idea or improvement for BloodWing Nectar
 title: "[Feature]: "
 labels: ["enhancement"]
 body:
   - type: markdown
     attributes:
       value: |
-        Ideas are welcome. Please check [existing issues](https://github.com/kua8/Nectar/issues) first so we don't duplicate a request.
+        Ideas are welcome. Please check
+        [existing issues](https://github.com/BloodWingXMalik/BloodWing-Nectar/issues)
+        first so we don't duplicate a request.
+
+        This is a personal fork of [Nectar](https://github.com/kua8/Nectar) — changes
+        to the shared core (notch, dock, media, multi-monitor) are usually better sent
+        [upstream](https://github.com/kua8/Nectar/issues) as well, so every user
+        benefits and the two projects stay close.
 
   - type: textarea
     id: problem
@@ -21,21 +28,23 @@ body:
     id: solution
     attributes:
       label: What would you like to see?
-      description: How do you imagine it working?
+      description: How do you imagine it working? Sketches and screenshots are welcome.
     validations:
       required: true
 
   - type: dropdown
     id: area
     attributes:
-      label: Which part of Nectar?
+      label: Which part of BloodWing Nectar?
       options:
         - Dock
         - Notch
+        - Theme / appearance / motion
         - Calendar / calendar sync
         - Timer / stopwatch
-        - Settings
-        - Installer
+        - Media / visualizer
+        - Settings window
+        - Installer / update experience
         - Something new
     validations:
       required: true
@@ -43,19 +52,15 @@ body:
   - type: textarea
     id: alternatives
     attributes:
-      label: Alternatives you've considered
-      description: Other ways you handle this today, or similar features in other apps.
-
-  - type: textarea
-    id: extra
-    attributes:
-      label: Anything else?
-      description: Mockups, screenshots or links are welcome.
+      label: Alternatives you have tried
+      description: Other tools or workarounds, and why they don't fit.
+    validations:
+      required: false
 
   - type: checkboxes
     id: checks
     attributes:
       label: Before submitting
       options:
-        - label: I searched existing issues and this hasn't been requested
+        - label: I searched existing issues for this request.
           required: true

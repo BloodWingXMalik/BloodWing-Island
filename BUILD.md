@@ -25,7 +25,7 @@ If `link.exe` is missing, open **x64 Native Tools Command Prompt for VS 2022** o
 
 ## Build commands
 
-From the repository root (`D:\Projects\notch` or wherever you cloned it):
+From the repository root (wherever you cloned it):
 
 ```powershell
 # 1. Install frontend dependencies (once)
