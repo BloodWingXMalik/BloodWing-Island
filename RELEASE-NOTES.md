@@ -58,13 +58,16 @@ this build), [TEST-REPORT.md](TEST-REPORT.md).
 
 ## Install
 
-- **Installer:** run `BloodWing_1.4.1_x64-setup.exe` (NSIS, per-user) or
-  `BloodWing_1.4.1_x64_en-US.msi` (WiX). Both put your native taskbar back on
-  uninstall.
-- **Portable:** run `BloodWing.exe` directly; settings go to
-  `%APPDATA%\com.bloodwing.notch`. Note that running the portable exe from a
-  non-installed location intentionally skips the uninstaller registry "healing"
-  (it only applies to installed copies).
+- **Installer (recommended):** run `BloodWing-Nectar-Setup-1.4.1-bloodwing.1-x64.exe`
+  (NSIS — choose *Just me* for a no-admin install, or *All users*), or
+  `BloodWing-Nectar-1.4.1-bloodwing.1-x64.msi` (WiX, machine-wide, needs admin).
+  Both put your native taskbar back on uninstall.
+- **Portable:** unzip `BloodWing-Nectar-Portable-1.4.1-bloodwing.1-x64.zip` and run
+  `BloodWing.exe` directly; settings go to `%APPDATA%\com.bloodwing.notch`. Running
+  the portable exe from a non-installed location intentionally skips the uninstaller
+  registry "healing" (it only applies to installed copies).
+- Step-by-step install, upgrade and uninstall instructions (including checksum
+  verification and SmartScreen guidance): [INSTALLATION.md](INSTALLATION.md).
 
 ## Uninstall / rollback
 
@@ -97,8 +100,29 @@ this build), [TEST-REPORT.md](TEST-REPORT.md).
 
 ## Artifacts
 
+Published release assets (all x64):
+
 | File | Size |
 | --- | --- |
-| `BloodWing.exe` | 27.20 MB |
-| `BloodWing_1.4.1_x64_en-US.msi` | 9.36 MB |
-| `BloodWing_1.4.1_x64-setup.exe` | 6.42 MB |
+| `BloodWing-Nectar-Setup-1.4.1-bloodwing.1-x64.exe` (NSIS) | 6.42 MB |
+| `BloodWing-Nectar-1.4.1-bloodwing.1-x64.msi` (WiX) | 9.36 MB |
+| `BloodWing-Nectar-Portable-1.4.1-bloodwing.1-x64.zip` | 9.07 MB |
+| `SHA256SUMS.txt` | checksums for the three files above |
+
+### Checksums (SHA-256)
+
+```
+7e982969b1a2159cb3503ec24b77793d2c0e57274b9270539bb3ea3bf50e5d90  BloodWing-Nectar-Setup-1.4.1-bloodwing.1-x64.exe
+f2d35b45f505be41d335c16b0a0bf02ea28622131cd913acceb5dc771dbe9e9c  BloodWing-Nectar-1.4.1-bloodwing.1-x64.msi
+52a1250c9e77d6669415f6f93a840261eb8c40c4c950111384b3b4b3ec5d4b13  BloodWing-Nectar-Portable-1.4.1-bloodwing.1-x64.zip
+```
+
+Verify on Windows:
+
+```powershell
+Get-FileHash .\BloodWing-Nectar-Setup-1.4.1-bloodwing.1-x64.exe -Algorithm SHA256
+```
+
+Local `bun run tauri build` output keeps Tauri's default artifact names
+(`BloodWing_1.4.1_x64-setup.exe`, `BloodWing_1.4.1_x64_en-US.msi`); the release
+workflow renames them to the assets above.

@@ -1,159 +1,355 @@
 <div align="center">
 
-> **This is the BloodWing build.** A personal, rebranded build of Nectar maintained in this
-> repository: charcoal-black and red theme, BloodWing identity, reliability hardening
-> (taskbar recovery, settings backups and validation), and a brightness-latency fix.
-> It is based on [Nectar](https://github.com/kua8/Nectar) by kua8 (itself a fork of
-> [Bloom](https://github.com/SehajveerSingh2005/bloom) by Sehajveer Singh) and remains
-> under the GPL-3.0.
->
-> - [BUILD.md](BUILD.md) — how to build and package BloodWing
-> - [CUSTOMIZATION.md](CUSTOMIZATION.md) — everything that differs from upstream
-> - [TEST-REPORT.md](TEST-REPORT.md) — verification results for this build
-> - [RELEASE-NOTES.md](RELEASE-NOTES.md) — what is in this release
->
-> The rest of this file is the upstream Nectar README and describes the shared feature set.
+<img src="public/bloodwing-mark.png" width="128" alt="BloodWing Nectar mark" />
 
-<img src="docs/logo.png" width="160" alt="Nectar logo" />
+# BloodWing Nectar
 
-<br />
+**A customised Windows desktop notch and animated dock — dark glass styling with restrained red accents.**
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/wordmark-dark.png" />
-  <img src="docs/wordmark-light.png" height="48" alt="Nectar" />
-</picture>
-
-**A notch and a dock for Windows: physics-animated, reactive, and built to replace your taskbar.**
-
-<br />
-
-[![Latest release](https://shieldcn.dev/github/release/kua8/Nectar.svg?logo=lu:Tag)](https://github.com/kua8/Nectar/releases/latest)
-[![Downloads](https://shieldcn.dev/github/downloads/kua8/Nectar.svg?logo=lu:Download)](https://github.com/kua8/Nectar/releases)
-[![License](https://shieldcn.dev/github/license/kua8/Nectar.svg?logo=lu:Scale)](LICENSE)
-![Platform](https://shieldcn.dev/badge/platform-Windows.svg?logo=ri:FaWindows)
-
-[**Download**](https://github.com/kua8/Nectar/releases/latest) &nbsp;·&nbsp; [Features](#features) &nbsp;·&nbsp; [Multiple monitors](#multiple-monitors) &nbsp;·&nbsp; [Settings](SETTINGS.md) &nbsp;·&nbsp; [Build from source](#build-from-source)
-
-<br />
-
-<img src="docs/screenshots/desktop.webp" width="820" alt="Nectar's notch and dock on a Windows desktop" />
+[![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
+![Platform: Windows](https://img.shields.io/badge/platform-Windows%2011%20x64-0078D4.svg)
+[![Built with Tauri](https://img.shields.io/badge/built%20with-Tauri%202-24C8DB.svg)](https://tauri.app)
+[![Based on Nectar](https://img.shields.io/badge/based%20on-Nectar%20by%20kua8-8A2BE2.svg)](https://github.com/kua8/Nectar)
 
 </div>
 
-<br />
+---
 
-Nectar is a fork of [Bloom](https://github.com/SehajveerSingh2005/bloom) by Sehajveer Singh, and the concept and the codebase it grew from are theirs. It is rebranded end to end and maintained independently, with its own fixes and direction.
+## Overview
+
+**BloodWing Nectar** is a personally maintained, rebranded build of
+[Nectar](https://github.com/kua8/Nectar) — a notch and dock replacement for the
+Windows taskbar. It keeps everything the upstream project does (media, visualizer,
+weather, battery, calendar, Pomodoro, taskbar mirroring, tray, search and
+multi-monitor support) and layers on:
+
+- a **charcoal-and-red design system** across every window,
+- **reliability hardening** for the taskbar (crash recovery, logoff/shutdown
+  restore, Explorer-restart recovery),
+- **settings safety** (automatic backups, input validation),
+- a **brightness-latency fix** for dragging the brightness slider,
+- and its own documentation, test report and release process.
+
+It is a fork, not a rewrite: upstream Nectar is the project this is built on, and
+credit belongs there. See [NOTICE.md](NOTICE.md) for the full attribution and
+[Credits](#credits) below.
+
+> **Status:** built and verified on a single Windows 11 x64 machine with one
+> 1920×1080 display. See [TEST-REPORT.md](TEST-REPORT.md) for exactly what was
+> tested, what was not, and the measured results. Nothing in this README claims
+> functionality that has not been implemented; claims about *verification* are
+> limited to what the test report records.
+
+## Screenshots
+
+> **Placeholder — no screenshots are committed to this repository yet.**
+> The images that used to live in `docs/screenshots/` are upstream Nectar's and no
+> longer represent this build, so they are intentionally not shown here.
+>
+> To add genuine captures: run the app, use `Win`+`Shift`+`S` (Snipping Tool) or any
+> screenshot tool, and save the files as described in
+> [`docs/screenshots/README.md`](docs/screenshots/README.md). A neutral desktop
+> background photographs best; avoid capturing personal content.
+>
+> Recommended set: notch expanded, command center, dock, settings, calendar.
 
 ## Features
 
-- **A notch that does things.** Music, quick controls, system stats, and a calendar in one spring-animated island at the top of your screen.
-- **A dock that replaces your taskbar.** It mirrors your real taskbar (same pinned apps, same order, real icons and names) and hides the native one.
-- **Native where it counts.** The system tray opens the actual Windows flyout, and Quit ends an app the way Task Manager's End task does.
-- **Yours to shape.** Themes, three visibility modes, per-monitor placement, and every option in a plain `settings.json` you can edit live.
-- **Light on the system.** Audio capture, cursor tracking, and thumbnail work pause themselves when nothing needs them.
+Everything below exists in this build and is inherited from upstream Nectar unless
+noted. See [CUSTOMIZATION.md](CUSTOMIZATION.md) for what this fork changed.
 
-## The Notch
+### Notch
 
-A notch at the top of your screen that adapts to what you're doing. Scroll or swipe to change modes, or pin it in place like a hardware notch.
+- **Four modes**, switched by scrolling or swiping over the notch:
+  - **Music** — album art, track info, playback controls and a five-band visualizer
+    driven by real system audio (WASAPI loopback).
+  - **Command Center** — Wi-Fi, Bluetooth, Do Not Disturb, per-app volume mixer,
+    brightness and quick actions.
+  - **Status** — battery (hidden automatically on systems without one), weather,
+    clock and configurable status widgets.
+  - **Calendar** — month view with CalDAV/ICS integration and a built-in Pomodoro
+    timer plus stopwatch.
+- **Mouse-wheel or trackpad-swipe** mode switching, or pin a mode in place.
+- **Media awareness** — when music starts, the notch can surface the player
+  automatically.
 
-<div align="center">
-<img src="docs/screenshots/island.png" width="420" alt="The Nectar notch showing the time and now-playing artwork" />
-</div>
+### Dock
 
-<br />
+- **Mirrors your real taskbar** — pinned apps are imported in the same order,
+  including Store apps, with real icons and names.
+- **Window previews** on hover, context menus that open above the dock, and
+  right-click → Quit that ends an app like Task Manager's *End task*.
+- **Pinned/running split** with an optional "Mix Pinned & Running" layout.
+- **Built-in search** that opens Windows Search, and a tray button that opens the
+  real Windows hidden-icons flyout.
+- **`Win`+`1`…`9`** shortcuts to launch or focus pinned apps while the dock
+  replaces the taskbar.
 
-| Mode | What it does |
+### Window and taskbar behaviour
+
+- **Visibility modes** for both notch and dock: **Fixed**, **Smart** (hides when
+  overlapped by a window) and **Peek** (hidden until you approach the screen edge).
+- **Multi-monitor support** — notch and dock each independently target primary, all,
+  or one specific monitor.
+- **Native taskbar is hidden while the dock is enabled and restored when it is
+  disabled, when the app exits, on logoff/shutdown, and after a crash** (see
+  [Taskbar safety](#taskbar-safety) below).
+- **Explorer-restart recovery** — if Explorer restarts, the dock re-registers
+  itself without you doing anything.
+
+### Settings
+
+- All options live in a single `settings.json` that the app watches and applies as
+  you save; the settings UI writes the same file.
+- **Automatic backups**: a snapshot on startup, plus timestamped copies (3 kept)
+  before any reset.
+- **Validated input**: keys, sizes, numeric ranges and enum values are checked in
+  the Rust backend before anything is written.
+- Unknown fields are preserved, and the settings schema is backward compatible with
+  upstream Nectar (`nectar-*` keys).
+
+## Visual design
+
+The BloodWing layer is defined in [`src/bloodwing.css`](src/bloodwing.css) and
+per-window theme files. Core tokens:
+
+| Token | Value | Use |
+| --- | --- | --- |
+| `--bw-bg` | `#0B0C0F` | Base background |
+| `--bw-elevated` | `#15171C` | Panels, cards |
+| `--bw-secondary` | `#1D2027` | Secondary surfaces |
+| `--bw-accent` | `#B51F2E` | Accent (restrained red) |
+| `--bw-accent-hover` | `#D02C3D` | Hover/active accent |
+| `--bw-text` | `#F3F4F6` | Primary text |
+| `--bw-text-muted` | `#A0A5B0` | Secondary text |
+
+- Inter is **bundled locally** (no font CDN, no external requests in the UI).
+- Translucent borders and glass surfaces are used instead of heavy shadows.
+- Accent presets are available in **Settings → Appearance**; the red is the default.
+- Motion can be reduced: `nectar-reduce-motion` (`system`/`on`/`off`) and
+  `nectar-motion-intensity` (`full`/`balanced`/`minimal`).
+
+Notch and dock geometry and animation springs are unchanged from upstream.
+
+## Technology stack
+
+| Layer | Technology |
 | --- | --- |
-| **Music** | Album art, track info, playback controls, and a visualizer that reacts to five frequency bands. |
-| **Command Center** | Wi-Fi, Bluetooth, Do Not Disturb, volume, and brightness without opening Windows Settings. |
-| **Status** | Battery (hidden automatically on desktops without one) and weather, in a layout you choose. |
-| **Calendar** | A month view with a built-in Pomodoro timer. |
+| Shell | [Tauri 2](https://tauri.app) (WebView2) |
+| Backend | Rust (Windows APIs: Win32, COM, WASAPI, WMI, DXVA2) |
+| Frontend | React 19 + TypeScript, Vite 7, framer-motion, lucide-react |
+| Styling | Hand-written CSS with custom properties (Tailwind is present for tooling) |
+| Package manager | [Bun](https://bun.sh) (lockfile committed) |
+| Packaging | WiX MSI + NSIS installers via `tauri build` |
 
-Width, height, corner radius, and position each animate on their own spring, so every transition feels physical.
+## Supported Windows versions
 
-**Visibility modes** (Settings › Notch):
-
-| Mode | Behavior |
+| Version | Status |
 | --- | --- |
-| **Fixed** | Always visible, even over fullscreen apps, like a real hardware notch. |
-| **Smart** | Hides when another window overlaps it and reveals on hover. |
-| **Peek** | Hidden until the cursor reaches the top edge, or a media event or notification arrives. |
+| **Windows 11 (x64)** | **Verified** — built, launched and tested on Windows 11 Pro build 26300 |
+| Windows 10 (x64) | Expected to work (Tauri 2 supports Windows 10 1809+), but **not verified by this fork** |
 
-In Smart and Peek the notch stays fully clickable when it's revealed. Only a thin strip at the very edge of the screen stays click-through, so it never swallows input meant for a screenshot tool or a game. The notch never reserves desktop space, so it can't leave a gap above maximized windows.
+Windows on ARM and 32-bit Windows are not supported.
 
-## The Dock
+## System requirements
 
-A taskbar that moves. Drag icons to reorder, hover for window previews, and right-click for a context menu that always opens above the dock.
+- Windows 11 x64 (or Windows 10 1809+ x64, untested — see above)
+- **WebView2 runtime** — preinstalled on Windows 11; on Windows 10 the installer
+  downloads and installs Microsoft's bootstrapper when it is missing (needs an
+  internet connection during setup)
+- ~40 MB free disk space for the application (installer is ~6–10 MB)
+- A display (multi-monitor supported)
 
-<div align="center">
-<img src="docs/screenshots/dock.png" width="520" alt="The Nectar dock with pinned apps" />
-</div>
+No administrator rights are required for the default *Just me* install. There are no
+services, drivers or scheduled tasks; autostart (optional) is a single per-user Run
+entry, which you can toggle in **Settings → General**.
 
-<br />
+## Installation
 
-- **Your taskbar, mirrored.** On first launch Nectar imports the apps pinned to your Windows taskbar, in the same order, including File Explorer, Discord, and Microsoft Store apps.
-- **Real icons and names.** Windows Settings shows its gear and Task Manager is called "Task Manager", not `taskmgr`.
-- **Pinned and running, separated.** A divider marks the split by default. Turn on **Mix Pinned & Running** to drag any icon anywhere.
-- **Quit means quit.** Right-click › Quit ends the app like End task in Task Manager.
-- **Search built in.** A search icon beside Start opens Windows Search.
-- **Native tray.** The tray button opens the real Windows hidden-icons flyout under the notch.
+Pick either route — **the GitHub Releases page is the only official source**:
 
-Dock visibility uses the same **Fixed**, **Smart**, and **Peek** modes as the notch. Fixed reserves screen space like a normal taskbar, Smart hides when a window overlaps it, and Peek stays out of the way until you approach the bottom edge.
+1. **Installer (recommended):** download the latest
+   [`BloodWing-Nectar-Setup-<version>-x64.exe`](../../releases/latest) (NSIS) — it
+   offers *Just me* (no admin) or *All users* (admin). An MSI is published alongside it.
+2. **Portable:** download `BloodWing-Nectar-Portable-<version>-x64.zip`, unpack
+   anywhere, run `BloodWing.exe`. Settings live in
+   `%APPDATA%\com.bloodwing.notch` either way.
 
-## Multiple monitors
+Full step-by-step instructions, upgrade and uninstall procedures, and
+troubleshooting live in **[INSTALLATION.md](INSTALLATION.md)**.
 
-The dock and the notch each have a **Show On** setting, chosen separately in Settings:
-
-| Show On | Result |
-| --- | --- |
-| **Primary Monitor** | Shown on your primary display only. This is the default. |
-| **All Monitors** | Every connected display gets its own copy. |
-| **Specific Monitor** | Pinned to one display you choose from a list. |
-
-Because the two are independent, the same app can look very different from one machine to the next:
-
-- **Dock and notch on every monitor.** Each screen looks the same, and each dock reserves its own space at the bottom.
-- **Dock on the primary only.** The other screens have no taskbar at all, since the Windows taskbar is hidden on every monitor while Nectar's dock is on. Maximized windows there use the full screen.
-- **Notch on one screen, dock on another.** Works fine, and each one follows its own visibility mode.
-- **Dock turned off.** The native Windows taskbar comes back on every monitor.
-
-Extra monitors get their own windows, so **All Monitors** uses somewhat more CPU and memory than a single display. If you're on a low-power machine, keep **Show On** on one monitor.
-
-## Under the hood
-
-The backend is Rust and talks straight to the Windows shell: global input hooks, WASAPI for real-time system audio, COM for media session control, and WMI for hardware monitoring. The interface is React, animated with springs.
-
-Every setting lives in one plain `settings.json` that Nectar watches and applies as you save, so you can script it or keep it in your dotfiles. [SETTINGS.md](SETTINGS.md) has the full reference. **Settings › About › Reset to Defaults** resets everything.
-
-## Install
-
-1. Download the installer from the [latest release](https://github.com/kua8/Nectar/releases/latest).
-2. Choose **Just me** or **All users**. An all-users install asks for administrator permission once.
-3. Nectar starts with a short splash animation, then the notch and dock appear together.
-
-Nectar updates itself: a green dot on the notch means an update is ready, and you can turn on **Auto Update** in **Settings › About**. **Launch at Login** is in **Settings › General**.
-
-**Uninstall** from Windows Settings › Apps, or from **Settings › About** inside Nectar. Both remove the app and put your native taskbar back.
-
-If Nectar is ever force-closed, it restores the Windows taskbar the next time it starts.
+> The installers are **not code-signed** (this is an open-source hobby build), so
+> Windows SmartScreen will show a "Windows protected your PC" prompt on first run.
+> That is expected for unsigned binaries — INSTALLATION.md explains how to verify
+> the download with its published SHA-256 checksum. This build never asks you to
+> disable Windows Defender or any other protection.
 
 ## Build from source
 
-You'll need [Rust](https://rustup.rs/) and [Bun](https://bun.sh/).
+Prerequisites: [Rust](https://rustup.rs) (MSVC toolchain), [Bun](https://bun.sh),
+and the Visual Studio C++ build tools (the Rust MSVC target needs them).
+[BUILD.md](BUILD.md) has the detailed, tested instructions.
 
-```bash
-git clone https://github.com/kua8/Nectar.git
-cd Nectar
+```powershell
+git clone https://github.com/BloodWingXMalik/BloodWing-Nectar.git
+cd BloodWing-Nectar
 bun install
-bun run tauri dev
+bun run tauri dev        # dev run with hot reload
+bun run tauri build      # production build + MSI + NSIS installers
 ```
 
-To produce a release build, run `bun run tauri build`.
+Output lands in `src-tauri/target/release/` (binary) and
+`src-tauri/target/release/bundle/` (installers).
+
+## Development commands
+
+| Command | What it does |
+| --- | --- |
+| `bun run tauri dev` | Runs the app with the Vite dev server (hot reload) |
+| `bun run dev` | Frontend only, in a browser at `http://localhost:1420` |
+| `bun run build` | Type-check (`tsc`) + production frontend build |
+| `bun run tauri build` | Full release build: app + MSI + NSIS |
+| `cargo test` (in `src-tauri/`) | Rust unit tests |
+| `bun run bump <version>` | Bumps the version across all manifests |
+
+## Configuration and customization
+
+- **User settings:** `%APPDATA%\com.bloodwing.notch\settings.json`
+  (portable and installed builds share this path). It is hot-reloaded on save.
+- **Full settings reference:** [SETTINGS.md](SETTINGS.md) — every key, its type,
+  range and defaults.
+- **Change history of this fork:** [CUSTOMIZATION.md](CUSTOMIZATION.md) documents
+  each deliberate difference from upstream, including internals kept for
+  compatibility (`nectar-*` setting keys, Tauri command names, keyring service
+  names).
+- **Branding / theme:** tokens in `src/bloodwing.css` and the per-window theme
+  files; logo and installer artwork are generated by
+  `scripts/generate-brand-assets.ps1`.
+
+Configuration lives entirely on your machine and is never uploaded anywhere.
+
+## Troubleshooting
+
+| Symptom | Fix |
+| --- | --- |
+| **Taskbar is hidden and you want it back** | Quit BloodWing from the tray (**Quit BloodWing**). That restores the taskbar. Disabling the dock in **Settings → Dock** also restores it. |
+| **Taskbar still hidden after a force-kill** | Run `scripts/restore-taskbar.ps1` (no admin needed). If it is still hidden, restart Explorer from Task Manager, then run it again. See [Taskbar safety](#taskbar-safety). |
+| **SmartScreen blocks the installer** | Expected for unsigned builds — choose *More info* → *Run anyway*, or verify the SHA-256 checksum first (INSTALLATION.md). Never disable Defender for this. |
+| **App doesn't start / blank windows** | Make sure the WebView2 runtime is installed (it ships with Windows 11; the installer can fetch it on Windows 10 when needed). The portable build is a single self-contained `BloodWing.exe` — nothing else needs to sit next to it. |
+| **Dock doesn't mirror my taskbar** | The import runs on first launch; re-run it from **Settings → Dock → Import from taskbar**. |
+| **Weather shows nothing** | Weather needs internet access to `api.open-meteo.com`; if location detection is blocked, set the city manually in **Settings → Weather**. |
+| **Brightness slider does not change the screen** | Some external monitors do not implement DDC/CI brightness control; the internal laptop panel uses WMI instead. |
+| **Settings file got broken by an edit** | Restore `settings.backup.json` next to it (created on startup), or reset from **Settings → About**. |
+
+## Known issues and limitations
+
+- **In-app updater is neutralised.** The update endpoint points at a placeholder and
+  no update artifacts are produced, so the app never installs anything by itself.
+  Updates are manual: download and run a newer installer. The About tab's update
+  check will therefore fail — that is expected.
+- **Single-machine verification.** Everything listed in [TEST-REPORT.md](TEST-REPORT.md)
+  was verified on one Windows 11 x64 laptop with a single display. Multi-monitor,
+  Explorer-restart, sleep/resume and install/uninstall flows are implemented and
+  code-reviewed but not live-verified there.
+- **Installers are unsigned** (no code-signing certificate), hence SmartScreen
+  warnings.
+- **`installer-app/`** (upstream's separate installer UI project) ships
+  unrebranded and is not used by this build's releases; only the NSIS/MSI
+  installers are produced.
+- **Upstream internals kept on purpose** for compatibility: `nectar-*` settings
+  keys, Tauri command names (e.g. `quit_nectar`), some CSS variable names, and the
+  keyring service names `Nectar CalDAV`/`Nectar Calendar Link` so existing
+  credentials keep working.
+
+## Taskbar safety
+
+Hiding the native taskbar is the riskiest thing a taskbar replacement can do, so
+this build treats it as a contract (documented in
+[CUSTOMIZATION.md](CUSTOMIZATION.md#taskbar-safety-model-unchanged-contract-strengthened)):
+
+- the taskbar is only hidden through one function that first writes a recovery
+  marker (`taskbar_hidden.flag`) containing your previous taskbar state;
+- every exit path — tray Quit, settings Quit, uninstall, `Ctrl`+`C`/console close,
+  logoff/shutdown — restores the taskbar **before** the process ends;
+- a force-kill leaves the marker behind, and the next launch restores the taskbar
+  from it;
+- if Explorer restarts, AppBar registrations are re-created automatically;
+- `scripts/restore-taskbar.ps1` is the manual fallback and needs no admin rights;
+- Explorer is never killed as a workaround.
+
+## Security and privacy
+
+Grounded in the source code of this repository:
+
+- **No telemetry, analytics, crash reporting or tracking of any kind.** There is no
+  telemetry dependency in `package.json`/`Cargo.toml` and no telemetry endpoint in
+  the code.
+- **No credentials in the repository**; there is no signing key, token or password
+  anywhere in the tree, and `.gitignore` excludes `*.key`/`*.key.pub`.
+- **Network access happens only for features you can recognise:**
+  - weather: `api.open-meteo.com` and `geocoding-api.open-meteo.com` (no API key);
+  - coarse location for the initial weather position: `ipapi.co` / `ip-api.com`
+    (can be avoided by setting the city manually);
+  - calendar sync: only the CalDAV/ICS URL **you** configure.
+  The webview's Content-Security-Policy restricts connections to exactly these
+  hosts plus the local IPC channel.
+- **Calendar credentials** are stored in the Windows Credential Manager (keyring),
+  not in settings files.
+- **All configuration is local** (`%APPDATA%\com.bloodwing.notch`). Uninstalling
+  does not delete it unless you ask it to (see INSTALLATION.md).
+- **Shell safety:** the app restores taskbar visibility on exit; the uninstaller
+  removes its own files, shortcuts and Run entry and touches nothing else.
+- **Reporting a vulnerability:** see [SECURITY.md](SECURITY.md).
+
+## License and attribution
+
+This project is distributed under the **GNU General Public License v3.0** — see
+[LICENSE](LICENSE). It is a modified version of a GPL-3.0 project, and the same
+license applies to the whole work.
+
+- **Upstream:** [Nectar](https://github.com/kua8/Nectar) by **kua8** — the original
+  project this build is based on (fork point: commit
+  `62c23243e326ae79af8855d5f0e542b98aa9ce3f`, version 1.4.1).
+- **Nectar** itself is a fork of [Bloom](https://github.com/SehajveerSingh2005/bloom)
+  by Sehajveer Singh.
+- All upstream copyright notices are retained. The modifications made by this fork
+  are listed in [CUSTOMIZATION.md](CUSTOMIZATION.md) and summarised in
+  [NOTICE.md](NOTICE.md).
+
+In short: the original code is not mine, the GPL applies, and the fork's changes are
+documented rather than implied. "Nectar" and "Bloom" remain the names of their
+respective projects; this build is not affiliated with or endorsed by their authors.
 
 ## Contributing
 
-Found a bug or have an idea? [Open an issue](https://github.com/kua8/Nectar/issues) or send a pull request. Say which Windows version and monitor setup you're on if it's a display bug, since that is often what decides it.
+This is a personal fork maintained in the open. Bug reports and pull requests are
+welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for scope, setup and expectations.
+For changes that are not specific to this fork, please consider sending them to
+[upstream Nectar](https://github.com/kua8/Nectar/issues) as well.
 
-## License
+## Credits
 
-Nectar is open source under the [GPLv3](LICENSE).
+- **[Nectar](https://github.com/kua8/Nectar)** — the upstream project: architecture,
+  nearly all application code, and the original documentation.
+- **[Bloom](https://github.com/SehajveerSingh2005/bloom)** — the origin of the
+  Nectar codebase.
+- **[Tauri](https://tauri.app)**, **[React](https://react.dev)**,
+  **[framer-motion](https://motion.dev)**, **[lucide](https://lucide.dev)**,
+  **[Inter](https://rsms.me/inter/)** — the stack this runs on.
+- The BloodWing customisation layer (theme, hardening, docs and this README) is my
+  own work on top of the above.
+
+## Project documentation
+
+| Document | Contents |
+| --- | --- |
+| [INSTALLATION.md](INSTALLATION.md) | Download, install, upgrade, uninstall, troubleshooting |
+| [BUILD.md](BUILD.md) | Building and packaging from source |
+| [CUSTOMIZATION.md](CUSTOMIZATION.md) | Every deliberate difference from upstream |
+| [SETTINGS.md](SETTINGS.md) | Complete settings reference |
+| [TEST-REPORT.md](TEST-REPORT.md) | What was tested, how, and with what results |
+| [RELEASE-NOTES.md](RELEASE-NOTES.md) | What is in the current release |
+| [CHANGELOG.md](CHANGELOG.md) | Version history of this fork |
+| [SECURITY.md](SECURITY.md) | Security policy and reporting |
+| [NOTICE.md](NOTICE.md) | Attribution and licensing details |
+
