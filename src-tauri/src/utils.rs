@@ -472,6 +472,77 @@ pub fn replace_settings_cache(new_settings: std::collections::HashMap<String, se
     }
 }
 
+/// Path to settings.json in the app config dir.
+pub fn settings_file_path(app: &tauri::AppHandle) -> Option<PathBuf> {
+    app.path().app_config_dir().ok().map(|p| p.join("settings.json"))
+}
+
+/// Snapshot settings.json to `settings.backup.json` once.
+///
+/// Runs at startup: the first launch after upgrading snapshots whatever earlier
+/// versions wrote, so a bad migration or a later "Reset settings" can never lose
+/// the user's configuration. An existing backup is never overwritten.
+pub fn ensure_settings_backup(app: &tauri::AppHandle) -> Option<PathBuf> {
+    let path = settings_file_path(app)?;
+    let backup = path.with_file_name("settings.backup.json");
+    if backup.exists() {
+        return Some(backup);
+    }
+    let contents = std::fs::read_to_string(&path).ok()?;
+    if contents.trim().is_empty() {
+        return None;
+    }
+    std::fs::write(&backup, contents).ok()?;
+    Some(backup)
+}
+
+/// Write a timestamped copy of settings.json and keep the three newest copies.
+/// Used before destructive operations such as "Reset settings".
+pub fn backup_settings_timestamped(app: &tauri::AppHandle) -> Option<PathBuf> {
+    let path = settings_file_path(app)?;
+    let contents = std::fs::read_to_string(&path).ok()?;
+    if contents.trim().is_empty() {
+        return None;
+    }
+    let stamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
+    let backup = path.with_file_name(format!("settings.backup.{stamp}.json"));
+    std::fs::write(&backup, &contents).ok()?;
+    prune_settings_backups(app, 3);
+    Some(backup)
+}
+
+fn prune_settings_backups(app: &tauri::AppHandle, keep: usize) {
+    let Some(dir) = app.path().app_config_dir().ok() else { return };
+    prune_settings_backups_in(&dir, keep);
+}
+
+/// Keep the `keep` newest `settings.backup.<unix>.json` files in `dir`.
+///
+/// Split out from [`prune_settings_backups`] so the retention rule is unit
+/// testable without a Tauri app handle.
+fn prune_settings_backups_in(dir: &std::path::Path, keep: usize) {
+    let Ok(entries) = std::fs::read_dir(dir) else { return };
+    let mut files: Vec<(u64, PathBuf)> = entries
+        .filter_map(|e| e.ok())
+        .filter_map(|e| {
+            let name = e.file_name().to_string_lossy().to_string();
+            let stamp = name
+                .strip_prefix("settings.backup.")?
+                .strip_suffix(".json")?
+                .parse::<u64>()
+                .ok()?;
+            Some((stamp, e.path()))
+        })
+        .collect();
+    files.sort_by(|a, b| b.0.cmp(&a.0));
+    for (_, p) in files.into_iter().skip(keep) {
+        let _ = std::fs::remove_file(p);
+    }
+}
+
 pub fn get_nectar_scale(_app: &tauri::AppHandle) -> f64 {
     get_setting_str(_app, "nectar-scale")
         .and_then(|s| s.parse::<f64>().ok())
@@ -912,5 +983,35 @@ mod tests {
         assert_eq!(resolve_executable_path("C:\\Windows\\notepad.exe"), None);
         assert_eq!(resolve_executable_path("nectar-definitely-not-installed"), None);
         assert_eq!(resolve_executable_path(""), None);
+    }
+
+    #[test]
+    fn settings_backup_retention_keeps_the_newest_three() {
+        use super::prune_settings_backups_in;
+
+        let dir = std::env::temp_dir().join(format!("bloodwing-backup-test-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+
+        // Five timestamped backups plus the plain startup backup and an unrelated file.
+        for stamp in [100u64, 200, 300, 400, 500] {
+            std::fs::write(dir.join(format!("settings.backup.{stamp}.json")), "{}").unwrap();
+        }
+        std::fs::write(dir.join("settings.backup.json"), "{}").unwrap();
+        std::fs::write(dir.join("settings.json"), "{}").unwrap();
+
+        prune_settings_backups_in(&dir, 3);
+
+        for stamp in [100u64, 200] {
+            assert!(!dir.join(format!("settings.backup.{stamp}.json")).exists(), "{stamp} should be pruned");
+        }
+        for stamp in [300u64, 400, 500] {
+            assert!(dir.join(format!("settings.backup.{stamp}.json")).exists(), "{stamp} should be kept");
+        }
+        // The plain startup backup and live settings file are never touched.
+        assert!(dir.join("settings.backup.json").exists());
+        assert!(dir.join("settings.json").exists());
+
+        let _ = std::fs::remove_dir_all(&dir);
     }
 }

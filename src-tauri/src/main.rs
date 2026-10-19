@@ -19,7 +19,9 @@ mod active_look;
 
 use tauri::Manager;
 use windows::Win32::System::Console::SetConsoleCtrlHandler;
-use windows::Win32::System::Console::{CTRL_BREAK_EVENT, CTRL_C_EVENT, CTRL_CLOSE_EVENT};
+use windows::Win32::System::Console::{
+    CTRL_BREAK_EVENT, CTRL_C_EVENT, CTRL_CLOSE_EVENT, CTRL_LOGOFF_EVENT, CTRL_SHUTDOWN_EVENT,
+};
 use windows::core::BOOL;
 use std::sync::atomic::Ordering;
 
@@ -29,10 +31,18 @@ use crate::services::*;
 use crate::commands::*;
 
 unsafe extern "system" fn ctrl_handler(ctrl_type: u32) -> BOOL {
-    if ctrl_type == CTRL_C_EVENT || ctrl_type == CTRL_BREAK_EVENT || ctrl_type == CTRL_CLOSE_EVENT {
+    // Restore the native taskbar before the process dies on any console signal:
+    // console close, user logoff or system shutdown. GUI (release) builds rely on
+    // RunEvent::Exit and the crash marker instead, but this covers console-attached
+    // runs and logoff/shutdown races.
+    if ctrl_type == CTRL_C_EVENT
+        || ctrl_type == CTRL_BREAK_EVENT
+        || ctrl_type == CTRL_CLOSE_EVENT
+        || ctrl_type == CTRL_LOGOFF_EVENT
+        || ctrl_type == CTRL_SHUTDOWN_EVENT
+    {
         set_taskbar_visibility(true, true);
         NATIVE_TASKBAR_HIDDEN.store(false, Ordering::Relaxed);
-
     }
     BOOL(0)
 }
@@ -54,8 +64,10 @@ fn main() {
         use windows::Win32::System::Threading::{CreateMutexW, CreateEventW, OpenEventW, SetEvent, SYNCHRONIZATION_ACCESS_RIGHTS};
         use windows::Win32::Foundation::{GetLastError, CloseHandle};
 
-        let mutex_name: Vec<u16> = "NectarSingleInstance".encode_utf16().chain(std::iter::once(0)).collect();
-        let event_name: Vec<u16> = "NectarOpenSettings".encode_utf16().chain(std::iter::once(0)).collect();
+        // Names are BloodWing-specific so a stock Nectar install can run side by
+        // side with this build without fighting over the single-instance lock.
+        let mutex_name: Vec<u16> = "BloodWingSingleInstance".encode_utf16().chain(std::iter::once(0)).collect();
+        let event_name: Vec<u16> = "BloodWingOpenSettings".encode_utf16().chain(std::iter::once(0)).collect();
 
         let h_mutex = CreateMutexW(None, true, windows::core::PCWSTR(mutex_name.as_ptr())).ok();
         let err = GetLastError();
@@ -195,8 +207,8 @@ fn main() {
             // Crash-recovery: if a previous session was force-killed while the native
             // taskbar was hidden, restore it now. Runs before the frontend re-hides it
             // (init_dock fires after a delay), so the flag must be removed first.
-            if std::env::var_os("NECTAR_RESTARTING").is_some() {
-                std::env::remove_var("NECTAR_RESTARTING");
+            if std::env::var_os("BLOODWING_RESTARTING").is_some() {
+                std::env::remove_var("BLOODWING_RESTARTING");
                 RELAUNCHED.store(true, Ordering::Relaxed);
             } else if taskbar_marker_exists() {
                 RELAUNCHED.store(true, Ordering::Relaxed);
@@ -205,6 +217,10 @@ fn main() {
             }
 
             crate::utils::init_settings_cache(app.handle());
+
+            // Snapshot the settings of the previous version once, before any
+            // migration or reset can touch them (BloodWing safety net).
+            crate::utils::ensure_settings_backup(app.handle());
 
             #[cfg(not(debug_assertions))]
             std::thread::spawn(crate::uninstall_registry::heal_uninstall_registration);
@@ -330,9 +346,9 @@ fn main() {
             {
                 use tauri::menu::{Menu, MenuItem};
                 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
-                let quit_item = MenuItem::with_id(app, "quit", "Quit Nectar", true, None::<&str>)?;
+                let quit_item = MenuItem::with_id(app, "quit", "Quit BloodWing", true, None::<&str>)?;
                 let restart_item =
-                    MenuItem::with_id(app, "restart", "Restart Nectar", true, None::<&str>)?;
+                    MenuItem::with_id(app, "restart", "Restart BloodWing", true, None::<&str>)?;
                 let settings_item =
                     MenuItem::with_id(app, "settings", "Open Settings", true, None::<&str>)?;
                 let calendar_item =
@@ -341,7 +357,7 @@ fn main() {
                 let ah = app.handle().clone();
                 TrayIconBuilder::new()
                     .icon(app.default_window_icon().unwrap().clone())
-                    .tooltip("Nectar")
+                    .tooltip("BloodWing")
                     .menu(&menu)
                     .on_menu_event(move |_, event| match event.id().as_ref() {
                         "quit" => {
@@ -356,7 +372,7 @@ fn main() {
                             }
                             if let Some(w) = ah.get_webview_window("settings") { let _ = w.destroy(); }
                             if let Some(w) = ah.get_webview_window("calendar") { let _ = w.destroy(); }
-                            std::env::set_var("NECTAR_RESTARTING", "1");
+                            std::env::set_var("BLOODWING_RESTARTING", "1");
                             close_single_instance_handles();
 
                             ah.restart();

@@ -2414,7 +2414,7 @@ pub async fn quit_nectar(handle: AppHandle) {
 fn registered_uninstaller() -> Option<std::path::PathBuf> {
     use std::os::windows::process::CommandExt;
     for root in ["HKCU", "HKLM"] {
-        let key = format!(r"{}\Software\Microsoft\Windows\CurrentVersion\Uninstall\Nectar", root);
+        let key = format!(r"{}\{}", root, crate::uninstall_registry::UNINSTALL_SUBKEY);
         let Ok(out) = std::process::Command::new("reg")
             .args(["query", &key, "/v", "UninstallString"])
             .creation_flags(0x0800_0000)
@@ -2445,7 +2445,7 @@ pub async fn uninstall_nectar(handle: AppHandle) -> Result<(), String> {
 
     if !uninstaller.exists() {
         uninstaller = registered_uninstaller().ok_or_else(|| {
-            "This copy of Nectar isn't an installed one (it's a portable or development build), so there's nothing to uninstall. Run it from its install folder, or use Windows Settings > Apps.".to_string()
+            "This copy of BloodWing isn't an installed one (it's a portable or development build), so there's nothing to uninstall. Run it from its install folder, or use Windows Settings > Apps.".to_string()
         })?;
     }
 
@@ -2508,7 +2508,7 @@ pub fn relaunch_nectar(handle: &AppHandle) {
     if let Some(w) = handle.get_webview_window("main") { if let Ok(hwnd) = w.hwnd() { unregister_appbar_native(hwnd); } }
     if let Some(w) = handle.get_webview_window("dock") { if let Ok(hwnd) = w.hwnd() { unregister_appbar_native(hwnd); } }
     if let Some(w) = handle.get_webview_window("settings") { let _ = w.destroy(); }
-    std::env::set_var("NECTAR_RESTARTING", "1");
+    std::env::set_var("BLOODWING_RESTARTING", "1");
     close_single_instance_handles();
     handle.restart();
 }
@@ -2660,8 +2660,77 @@ const MONITOR_TARGETING_KEYS: [&str; 5] = [
     "nectar-dock-enabled",
 ];
 
+/// Validate a settings key/value pair before it reaches settings.json.
+///
+/// Keys must follow the documented `nectar-` schema (lowercase letters, digits,
+/// dashes). Values must serialize to at most 256 KB, numbers must be finite and
+/// stay inside sane ranges, and known enum keys reject typos that would silently
+/// do nothing. `null` stays allowed because the app uses it to clear keys.
+fn validate_setting(key: &str, value: &serde_json::Value) -> Result<(), String> {
+    if key.is_empty() || key.len() > 128 {
+        return Err("Setting key length must be between 1 and 128 characters".into());
+    }
+    if !key.starts_with("nectar-") {
+        return Err(format!("Setting key '{key}' must start with 'nectar-'"));
+    }
+    if !key.bytes().all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-') {
+        return Err(format!(
+            "Setting key '{key}' may only contain lowercase letters, digits and dashes"
+        ));
+    }
+
+    let encoded_len = serde_json::to_string(value).map(|s| s.len()).unwrap_or(0);
+    if encoded_len > 256 * 1024 {
+        return Err("Setting value is too large (limit 256 KB)".into());
+    }
+
+    // Numeric settings must stay finite and inside sane ranges so a bad slider
+    // value can never break layout math later.
+    if let Some(n) = value.as_f64() {
+        if !n.is_finite() {
+            return Err(format!("Setting '{key}' must be a finite number"));
+        }
+        let bounds: Option<(f64, f64)> = match key {
+            "nectar-scale" => Some((0.5, 2.0)),
+            "nectar-theme-opacity" => Some((0.0, 1.0)),
+            "nectar-theme-saturation" => Some((0.0, 1.0)),
+            "nectar-theme-brightness" => Some((0.0, 1.0)),
+            "nectar-low-battery-threshold" => Some((1.0, 100.0)),
+            "nectar-caldav-interval" => Some((5.0, 24.0 * 60.0)),
+            _ => None,
+        };
+        if let Some((min, max)) = bounds {
+            if n < min || n > max {
+                return Err(format!("Setting '{key}' must be between {min} and {max}"));
+            }
+        }
+    }
+
+    // Known enum-style keys: reject values that would silently do nothing.
+    let allowed: Option<&[&str]> = match key {
+        "nectar-theme-mode" => Some(&["dark", "light", "custom", "adaptive"]),
+        "nectar-dock-mode" | "nectar-notch-mode" => Some(&["fixed", "smart", "auto-hide"]),
+        "nectar-dock-monitor-mode" | "nectar-notch-monitor-mode" => {
+            Some(&["primary", "all", "specific"])
+        }
+        "nectar-reduce-motion" => Some(&["system", "on", "off"]),
+        "nectar-motion-intensity" => Some(&["full", "balanced", "minimal"]),
+        "nectar-temp-unit" => Some(&["celsius", "fahrenheit"]),
+        "nectar-media-layout" => Some(&["classic", "compact"]),
+        _ => None,
+    };
+    if let (Some(s), Some(allowed)) = (value.as_str(), allowed) {
+        if !allowed.contains(&s) {
+            return Err(format!("Setting '{key}' has an unsupported value '{s}'"));
+        }
+    }
+
+    Ok(())
+}
+
 #[tauri::command]
 pub fn save_setting(app: AppHandle, key: String, value: serde_json::Value) -> Result<(), String> {
+    validate_setting(&key, &value)?;
     let path = app.path().app_config_dir().map_err(|e| e.to_string())?.join("settings.json");
     if let Some(parent) = path.parent() { let _ = std::fs::create_dir_all(parent); }
     let mut settings = HashMap::new();
@@ -2736,9 +2805,15 @@ pub fn load_settings(app: AppHandle) -> Result<HashMap<String, serde_json::Value
 
 #[tauri::command]
 pub fn reset_settings(app: AppHandle) -> Result<(), String> {
+    // Never destroy user settings without a timestamped backup on disk.
+    if let Some(backup) = crate::utils::backup_settings_timestamped(&app) {
+        crate::diagnostics::log(&format!("reset_settings: backed up to {}", backup.display()));
+    }
     let path = app.path().app_config_dir().map_err(|e| e.to_string())?.join("settings.json");
     std::fs::write(&path, "{}").map_err(|e| e.to_string())?;
     crate::utils::replace_settings_cache(HashMap::new());
+    // Every window listens for this to clear its localStorage copy and reload.
+    let _ = app.emit("settings-reset", serde_json::json!({}));
     Ok(())
 }
 
@@ -3134,7 +3209,7 @@ const PROTECTED_PROCESS_NAMES: &[&str] = &[
     "smss.exe",
     "explorer.exe",
     "dwm.exe",
-    "nectar.exe",
+    "bloodwing.exe",
 ];
 
 #[tauri::command]
@@ -3629,5 +3704,57 @@ mod pwa_icon_tests {
             pwa_launch_target("C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe", Some("Netflix")),
             Some("C:\\Start Menu\\Netflix.lnk".into())
         );
+    }
+}
+
+#[cfg(test)]
+mod settings_validation_tests {
+    use super::validate_setting;
+    use serde_json::json;
+
+    #[test]
+    fn keys_must_follow_the_nectar_schema() {
+        assert!(validate_setting("nectar-scale", &json!(1.0)).is_ok());
+        assert!(validate_setting("scale", &json!(1.0)).is_err());
+        assert!(validate_setting("Nectar-Scale", &json!(1.0)).is_err());
+        assert!(validate_setting("nectar-scale!", &json!(1.0)).is_err());
+        assert!(validate_setting("nectar-with_underscore", &json!(1.0)).is_err());
+        assert!(validate_setting("", &json!(1.0)).is_err());
+        assert!(validate_setting(&format!("nectar-{}", "a".repeat(200)), &json!(1.0)).is_err());
+    }
+
+    #[test]
+    fn numeric_bounds_are_enforced() {
+        assert!(validate_setting("nectar-scale", &json!(0.5)).is_ok());
+        assert!(validate_setting("nectar-scale", &json!(2.0)).is_ok());
+        assert!(validate_setting("nectar-scale", &json!(2.5)).is_err());
+        assert!(validate_setting("nectar-theme-opacity", &json!(-0.1)).is_err());
+        assert!(validate_setting("nectar-caldav-interval", &json!(1440.0)).is_ok());
+        assert!(validate_setting("nectar-caldav-interval", &json!(1.0)).is_err());
+        assert!(validate_setting("nectar-low-battery-threshold", &json!(0.0)).is_err());
+        // Unknown numeric keys pass through, so future settings don't need a
+        // validation change just to be stored.
+        assert!(validate_setting("nectar-future-knob", &json!(12345.0)).is_ok());
+    }
+
+    #[test]
+    fn enum_keys_reject_typos_and_null_stays_allowed() {
+        assert!(validate_setting("nectar-theme-mode", &json!("dark")).is_ok());
+        assert!(validate_setting("nectar-theme-mode", &json!("drak")).is_err());
+        assert!(validate_setting("nectar-reduce-motion", &json!("on")).is_ok());
+        assert!(validate_setting("nectar-reduce-motion", &json!("maybe")).is_err());
+        assert!(validate_setting("nectar-motion-intensity", &json!("balanced")).is_ok());
+        assert!(validate_setting("nectar-dock-monitor-mode", &json!("specific")).is_ok());
+        assert!(validate_setting("nectar-dock-monitor-mode", &json!("second")).is_err());
+        // null clears a key (the weather city clear flow) and must never be rejected.
+        assert!(validate_setting("nectar-weather-city", &serde_json::Value::Null).is_ok());
+    }
+
+    #[test]
+    fn oversized_values_are_rejected() {
+        let big = "x".repeat(256 * 1024 + 1);
+        assert!(validate_setting("nectar-weather-cached", &json!(big)).is_err());
+        let ok = "x".repeat(64 * 1024);
+        assert!(validate_setting("nectar-weather-cached", &json!(ok)).is_ok());
     }
 }

@@ -973,12 +973,11 @@ pub fn setup_system_worker(app_handle: AppHandle) -> Sender<SystemCommand> {
                 while !hwnd.is_invalid() && check_count < 15 {
                     let mut process_id = 0u32;
                     GetWindowThreadProcessId(hwnd, Some(&mut process_id));
-                    
-                    let mut class_name = [0u8; 256];
-                    let len = windows::Win32::UI::WindowsAndMessaging::GetClassNameA(hwnd, &mut class_name);
-                    let class_str = std::str::from_utf8(&class_name[..len as usize]).unwrap_or("");
-                    
-                    let is_nectar = process_id == my_process_id || class_str.contains("Nectar");
+
+                    // Skip our own windows; the pid check alone is enough now that
+                    // tao's default window class ("Tauri Window") replaced the old
+                    // per-app class name this used to match on.
+                    let is_own_app = process_id == my_process_id;
                     let is_visible = IsWindowVisible(hwnd).as_bool();
                     let is_iconic = IsIconic(hwnd).as_bool();
                     
@@ -988,7 +987,7 @@ pub fn setup_system_worker(app_handle: AppHandle) -> Sender<SystemCommand> {
                     let mut rect = RECT::default();
                     let has_valid_rect = GetWindowRect(hwnd, &mut rect).is_ok() && (rect.right - rect.left) > 0 && (rect.bottom - rect.top) > 0;
                     
-                    if is_nectar || !is_visible || is_iconic || is_cloaked || !has_valid_rect {
+                    if is_own_app || !is_visible || is_iconic || is_cloaked || !has_valid_rect {
                         hwnd = windows::Win32::UI::WindowsAndMessaging::GetWindow(hwnd, windows::Win32::UI::WindowsAndMessaging::GW_HWNDNEXT).unwrap_or_default();
                         check_count += 1;
                     } else {
@@ -1236,6 +1235,21 @@ pub fn setup_system_worker(app_handle: AppHandle) -> Sender<SystemCommand> {
 
                     if should_rehide {
                         set_taskbar_visibility(false, false);
+                    }
+                }
+
+                // Explorer-restart watchdog: the shell's desktop window changes when
+                // Explorer restarts, which drops every AppBar registration and
+                // re-shows the native taskbar. Re-register with retries.
+                {
+                    use windows::Win32::UI::WindowsAndMessaging::GetShellWindow;
+                    let shell = GetShellWindow();
+                    let shell_val = shell.0 as isize;
+                    if shell_val != 0 {
+                        let prev = crate::state::SHELL_WINDOW_HANDLE.swap(shell_val, Ordering::Relaxed);
+                        if prev != 0 && prev != shell_val {
+                            handle_explorer_restart(&handle_visibility);
+                        }
                     }
                 }
             }
@@ -2724,7 +2738,7 @@ pub unsafe extern "system" fn enum_windows_proc(hwnd: HWND, lparam: LPARAM) -> B
             }
 
             // Filter out system containers and background stuff
-            if title == "Program Manager" || title == "nectar" || title == "Nectar Dock" {
+            if title == "Program Manager" || title == "BloodWing" || title == "BloodWing Dock" {
                 return true.into();
             }
 
@@ -2748,7 +2762,7 @@ pub unsafe extern "system" fn enum_windows_proc(hwnd: HWND, lparam: LPARAM) -> B
                         || window_class == "ExploreWClass"
                         || (window_class == "#32770" && dialog_has_tab_control(hwnd));
 
-                    if (lowercase_path.contains("nectar.exe") && title != "Settings") ||
+                    if (lowercase_path.contains("bloodwing.exe") && title != "BloodWing Settings") ||
                        lowercase_path.contains("conhost.exe") ||
                        (lowercase_path.contains("explorer.exe") && !is_explorer_window) ||
                        lowercase_path.contains("shellexperiencehost.exe") ||
@@ -2978,7 +2992,19 @@ fn reposition_all_windows(app_handle: &AppHandle) {
         return;
     }
     crate::monitors::sync_monitor_windows(app_handle);
+    reassert_appbars(app_handle);
+    sync_overlays(app_handle);
+}
 
+/// Re-register AppBars, re-hide the native taskbar and re-assert topmost.
+///
+/// Shared by the display/power handler and the Explorer-restart watchdog: both
+/// invalidate AppBar registrations (the shell forgets them) and can re-show the
+/// native taskbar.
+pub(crate) fn reassert_appbars(app_handle: &AppHandle) {
+    if SHUTTING_DOWN.load(Ordering::Relaxed) {
+        return;
+    }
     for (label, win) in app_handle.webview_windows() {
         if crate::state::is_notch_label(&label) {
             if crate::state::get_flag(crate::state::main_appbar_registered(), &label) {
@@ -3002,13 +3028,33 @@ fn reposition_all_windows(app_handle: &AppHandle) {
     if NATIVE_TASKBAR_HIDDEN.load(Ordering::Relaxed) {
         set_taskbar_visibility(false, false);
     }
-    sync_overlays(app_handle);
     // Re-assert topmost on all windows after repositioning to recover from any z-order loss
     for (label, win) in app_handle.webview_windows() {
         if crate::state::is_notch_label(&label) || crate::state::is_dock_label(&label) {
             if let Ok(hwnd) = win.hwnd() { re_assert_topmost(hwnd); }
         }
     }
+}
+
+/// Explorer restarted (crash, update, "Restart Explorer"): the new shell dropped
+/// every AppBar registration and may have re-shown the native taskbar. Re-register
+/// with retries because a fresh shell takes a moment to accept AppBar messages.
+pub(crate) fn handle_explorer_restart(app_handle: &AppHandle) {
+    if SHUTTING_DOWN.load(Ordering::Relaxed) {
+        return;
+    }
+    crate::diagnostics::log("Explorer restart detected — re-registering AppBars and re-hiding taskbar");
+    let ah = app_handle.clone();
+    std::thread::spawn(move || {
+        for delay_ms in [400u64, 1500, 4000] {
+            std::thread::sleep(std::time::Duration::from_millis(delay_ms));
+            if SHUTTING_DOWN.load(Ordering::Relaxed) {
+                return;
+            }
+            reassert_appbars(&ah);
+            sync_overlays(&ah);
+        }
+    });
 }
 
 fn reposition_autohide_dock(app_handle: &AppHandle, dock_win: tauri::WebviewWindow) {
@@ -3064,7 +3110,7 @@ pub fn setup_display_change_monitor(app_handle: AppHandle) {
             use windows::Win32::UI::WindowsAndMessaging::*;
             use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 
-            let class_name = windows::core::PCSTR(c"NectarDisplayMonitor".as_ptr() as *const u8);
+            let class_name = windows::core::PCSTR(c"BloodWingDisplayMonitor".as_ptr() as *const u8);
             let h_inst = GetModuleHandleW(None).unwrap_or_default().into();
 
             let wnd_class = WNDCLASSEXA {

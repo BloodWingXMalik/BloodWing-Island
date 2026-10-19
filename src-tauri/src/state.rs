@@ -1,4 +1,4 @@
-use std::sync::{atomic::{AtomicBool, AtomicU32, AtomicI64}, Mutex, OnceLock};
+use std::sync::{atomic::{AtomicBool, AtomicIsize, AtomicU32, AtomicI64}, Mutex, OnceLock};
 use std::sync::mpsc::Sender;
 use std::collections::HashMap;
 use crate::types::{SystemCommand, IntRect, AppInfo};
@@ -166,6 +166,10 @@ pub fn close_single_instance_handles() {
 
 pub static DISPLAY_MONITOR_HANDLE: OnceLock<AppHandle> = OnceLock::new();
 pub static LAST_DISPLAY_CHANGE_MS: AtomicI64 = AtomicI64::new(0);
+
+/// Handle of the shell's desktop window (GetShellWindow). Changes when Explorer
+/// restarts, which invalidates every AppBar registration and re-shows the taskbar.
+pub static SHELL_WINDOW_HANDLE: AtomicIsize = AtomicIsize::new(0);
 
 /// Mixer panel bounds (x, y, w, h) in overlay CSS px, None when collapsed.
 pub static VOLUME_MIXER_RECT: Mutex<Option<(f64, f64, f64, f64)>> = Mutex::new(None);
