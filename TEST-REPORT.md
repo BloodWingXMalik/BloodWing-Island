@@ -106,6 +106,12 @@ the tray *Quit BloodWing* menu uses. Result both times:
 PowerShell 5.1 (ASCII-only, no admin rights): found `Shell_TrayWnd`, made it
 visible, exit code 0.
 
+**Final post-fix build.** Relaunched `release/BloodWing.exe` after the brightness fix:
+process starts, all five windows plus the display-monitor helper and tray icon are
+created, dock active and taskbar hidden with the recovery marker present. CPU during
+the first 10 s after startup: 0.25 % of total (startup work still settling); the
+idle figure below is from a settled session.
+
 ## Performance measurements (real, this machine)
 
 **Idle usage** — app running, notch and dock active, nothing playing:
@@ -172,11 +178,11 @@ above are component-level measurements plus code inspection.
 
 ## Artifacts
 
-| File | Size |
-| --- | --- |
-| `release/BloodWing.exe` (portable) | 27.18 MB |
-| `release/BloodWing_1.4.1_x64_en-US.msi` | 9.35 MB |
-| `release/BloodWing_1.4.1_x64-setup.exe` (NSIS) | 6.41 MB |
+| File | Bytes | Size |
+| --- | --- | --- |
+| `release/BloodWing.exe` (portable) | 28,519,424 | 27.20 MB |
+| `release/BloodWing_1.4.1_x64_en-US.msi` | 9,818,112 | 9.36 MB |
+| `release/BloodWing_1.4.1_x64-setup.exe` (NSIS) | 6,734,967 | 6.42 MB |
 
 All three are copied from `src-tauri/target/release/` after the final build. The
 portable exe is self-contained (WebView2 runtime is required and already present on

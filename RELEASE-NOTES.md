@@ -99,6 +99,6 @@ this build), [TEST-REPORT.md](TEST-REPORT.md).
 
 | File | Size |
 | --- | --- |
-| `BloodWing.exe` | 27.18 MB |
-| `BloodWing_1.4.1_x64_en-US.msi` | 9.35 MB |
-| `BloodWing_1.4.1_x64-setup.exe` | 6.41 MB |
+| `BloodWing.exe` | 27.20 MB |
+| `BloodWing_1.4.1_x64_en-US.msi` | 9.36 MB |
+| `BloodWing_1.4.1_x64-setup.exe` | 6.42 MB |
