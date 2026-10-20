@@ -1,4 +1,4 @@
-# Contributing to BloodWing Nectar
+# Contributing to BloodWing Island
 
 Thanks for taking a look. This is a personal fork of
 [Nectar](https://github.com/kua8/Nectar) maintained in the open, so a few things are

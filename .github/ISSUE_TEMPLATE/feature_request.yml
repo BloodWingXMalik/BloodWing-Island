@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest an idea or improvement for BloodWing Nectar
+description: Suggest an idea or improvement for BloodWing Island
 title: "[Feature]: "
 labels: ["enhancement"]
 body:
@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         Ideas are welcome. Please check
-        [existing issues](https://github.com/BloodWingXMalik/BloodWing-Nectar/issues)
+        [existing issues](https://github.com/BloodWingXMalik/BloodWing-Island/issues)
         first so we don't duplicate a request.
 
         This is a personal fork of [Nectar](https://github.com/kua8/Nectar) — changes
@@ -35,7 +35,7 @@ body:
   - type: dropdown
     id: area
     attributes:
-      label: Which part of BloodWing Nectar?
+      label: Which part of BloodWing Island?
       options:
         - Dock
         - Notch

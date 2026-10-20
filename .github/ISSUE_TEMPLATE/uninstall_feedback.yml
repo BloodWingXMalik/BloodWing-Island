@@ -1,5 +1,5 @@
 name: Uninstall feedback
-description: Tell us why you removed BloodWing Nectar
+description: Tell us why you removed BloodWing Island
 title: "[Uninstall]: "
 labels: ["uninstall-feedback"]
 body:
@@ -11,7 +11,7 @@ body:
         addresses or calendar URLs).
 
         If the uninstaller misbehaved (leftovers, taskbar not restored), that is worth
-        a [bug report](https://github.com/BloodWingXMalik/BloodWing-Nectar/issues/new?template=bug_report.yml)
+        a [bug report](https://github.com/BloodWingXMalik/BloodWing-Island/issues/new?template=bug_report.yml)
         instead.
 
   - type: dropdown

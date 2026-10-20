@@ -19,7 +19,7 @@ use crate::uninstall_registry::{
 };
 
 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
-const TITLE: &str = "BloodWing";
+const TITLE: &str = "BloodWing Island";
 
 pub fn requested() -> bool {
     let by_arg = std::env::args().skip(1).any(|a| a == "--uninstall");
@@ -110,9 +110,9 @@ fn restore_taskbar_if_left_hidden() {
 
 fn remove_shortcuts(all_users: bool) {
     let mut lnks = Vec::new();
-    if let Some(d) = start_menu_programs_dir(all_users) { lnks.push(d.join("BloodWing.lnk")); }
-    if let Some(d) = legacy_start_menu_dir(all_users) { lnks.push(d.join("BloodWing.lnk")); }
-    if let Some(d) = desktop_dir(all_users) { lnks.push(d.join("BloodWing.lnk")); }
+    if let Some(d) = start_menu_programs_dir(all_users) { lnks.push(d.join("BloodWing Island.lnk")); }
+    if let Some(d) = legacy_start_menu_dir(all_users) { lnks.push(d.join("BloodWing Island.lnk")); }
+    if let Some(d) = desktop_dir(all_users) { lnks.push(d.join("BloodWing Island.lnk")); }
     for lnk in lnks {
         let _ = std::fs::remove_file(lnk);
     }
@@ -125,10 +125,15 @@ fn remove_registry(all_users: bool) {
         let _ = RegDeleteTreeW(root, PCWSTR(subkey_w.as_ptr()));
         let install_key = wide(r"Software\bloodwing\notch");
         let _ = RegDeleteTreeW(root, PCWSTR(install_key.as_ptr()));
+        // The NSIS installer writes a manufacturer key
+        // (`Software\<publisher>\<productName>`). Removing it here keeps an
+        // uninstall from leaving a stale key that points at the deleted folder.
+        let manufacturer_key = wide(r"Software\BloodWing\BloodWing Island");
+        let _ = RegDeleteTreeW(root, PCWSTR(manufacturer_key.as_ptr()));
 
         let run_key = wide(r"Software\Microsoft\Windows\CurrentVersion\Run");
         let approved_key = wide(r"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run");
-        let value = wide("BloodWing");
+        let value = wide("BloodWing Island");
         let _ = RegDeleteKeyValueW(HKEY_CURRENT_USER, PCWSTR(run_key.as_ptr()), PCWSTR(value.as_ptr()));
         let _ = RegDeleteKeyValueW(HKEY_CURRENT_USER, PCWSTR(approved_key.as_ptr()), PCWSTR(value.as_ptr()));
     }
@@ -142,13 +147,13 @@ pub fn run() {
 
     if all_users && !is_elevated() {
         if !relaunch_elevated(&exe) {
-            message("BloodWing was installed for all users, so uninstalling it needs administrator permission.", MB_OK | MB_ICONINFORMATION);
+            message("BloodWing Island was installed for all users, so uninstalling it needs administrator permission.", MB_OK | MB_ICONINFORMATION);
         }
         return;
     }
 
     if message(
-        "Uninstall BloodWing?\n\nThis removes the app and its shortcuts. Your settings are kept in case you reinstall.",
+        "Uninstall BloodWing Island?\n\nThis removes the app and its shortcuts. Your settings are kept in case you reinstall.",
         MB_YESNO | MB_ICONQUESTION,
     ) != IDYES
     {
@@ -190,10 +195,10 @@ pub fn run() {
 
     if spawned.is_err() {
         message(
-            &format!("BloodWing was unregistered, but its folder couldn't be removed automatically. You can delete it yourself:\n\n{}", install_dir.display()),
+            &format!("BloodWing Island was unregistered, but its folder couldn't be removed automatically. You can delete it yourself:\n\n{}", install_dir.display()),
             MB_OK | MB_ICONINFORMATION,
         );
         return;
     }
-    message("BloodWing has been uninstalled.", MB_OK | MB_ICONINFORMATION);
+    message("BloodWing Island has been uninstalled.", MB_OK | MB_ICONINFORMATION);
 }

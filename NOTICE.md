@@ -1,6 +1,6 @@
 # Notice and attribution
 
-**BloodWing Nectar** (this repository) is a modified version of **Nectar**.
+**BloodWing Island** (this repository) is a modified version of **Nectar**.
 
 ## Upstream project
 
@@ -39,7 +39,7 @@ and documentation for this fork, and the corresponding build/release tooling.
 ## Names and marks
 
 "Nectar" and "Bloom" are the names of their respective projects and belong to their
-authors. **BloodWing Nectar is not affiliated with, endorsed by, or supported by**
+authors. **BloodWing Island is not affiliated with, endorsed by, or supported by**
 the Nectar or Bloom maintainers, and issues with this fork should be reported
 [here](../../issues) rather than upstream.
 

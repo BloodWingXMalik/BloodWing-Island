@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to **this fork** (BloodWing Nectar) are documented in this file.
+All notable changes to **this fork** (BloodWing Island) are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 versions track the upstream Nectar version they are based on, with a fork suffix
 (`-bloodwing.N`).
@@ -39,10 +39,13 @@ Based on Nectar 1.4.1 (upstream commit `62c23243e326ae79af8855d5f0e542b98aa9ce3f
 
 ### Changed
 
-- Renamed the product to **BloodWing** end to end: binary (`BloodWing.exe`), window
-  titles, tray strings, installer/uninstaller metadata, registry keys
-  (`Software\bloodwing\notch`, `…\Uninstall\BloodWing`), Run entry, log file
-  (`bloodwing.log`) and diagnostics identity (`com.bloodwing.notch`).
+- Renamed the product to **BloodWing Island** end to end where the OS sees it:
+  installer, Start Menu/desktop shortcuts, Apps list entry
+  (`…\Uninstall\BloodWing Island`), uninstall dialogs, tray tooltip and the autostart
+  Run value. The executable stays `BloodWing.exe` and the in-app brand stays
+  "BloodWing"; see [CUSTOMIZATION.md](CUSTOMIZATION.md) for the rationale.
+- The NSIS installer is now **per-user only** (no elevation, no UAC prompt); the MSI
+  remains the machine-wide option.
 - Settings and configuration now live in `%APPDATA%\com.bloodwing.notch`.
 - Taskbar restore paths hardened: exit, `Ctrl`+`C`/console close, logoff and
   shutdown all restore the taskbar through one code path before the process ends.
@@ -58,6 +61,9 @@ Based on Nectar 1.4.1 (upstream commit `62c23243e326ae79af8855d5f0e542b98aa9ce3f
   Measured before/after numbers: [TEST-REPORT.md](TEST-REPORT.md#brightness-latency--investigation-and-fix).
 - Settings could be lost if the file was edited into an invalid state; a startup
   backup plus validation now prevents that class of data loss.
+- Uninstalling now also removes the installer's manufacturer key
+  (`HKCU`/`HKLM` `\Software\BloodWing\BloodWing Island`), which previously survived
+  and pointed at the deleted install directory.
 
 ### Security
 

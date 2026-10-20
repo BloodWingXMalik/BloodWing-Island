@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Only the latest published release of BloodWing Nectar is supported with fixes.
+Only the latest published release of BloodWing Island is supported with fixes.
 Because this is a fork, security fixes in the shared codebase are usually made
 upstream first; report those to [Nectar](https://github.com/kua8/Nectar) as well.
 
@@ -17,7 +17,7 @@ Please **do not open a public issue** for security problems. Use GitHub's privat
 vulnerability reporting:
 
 1. Go to the repository's **Security** tab → **Report a vulnerability**
-   (`https://github.com/BloodWingXMalik/BloodWing-Nectar/security/advisories/new`).
+   (`https://github.com/BloodWingXMalik/BloodWing-Island/security/advisories/new`).
 2. Describe the issue, the affected version, and reproduction steps, and say whether
    you plan to disclose it publicly.
 

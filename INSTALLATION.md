@@ -1,14 +1,14 @@
-# Installing BloodWing Nectar
+# Installing BloodWing Island
 
 This guide covers downloading, installing, upgrading and uninstalling BloodWing
-Nectar on Windows, plus first-launch setup and troubleshooting.
+Island on Windows, plus first-launch setup and troubleshooting.
 
-> **Verified scope:** the information below about what the installers *do* comes from
-> inspecting the generated installer scripts (WiX MSI and NSIS) built from this
-> source tree. A full install → upgrade → uninstall cycle on a clean machine has
-> **not** been performed yet by this fork — see
-> [TEST-REPORT.md](TEST-REPORT.md#not-verified--disclosed). Treat the install
-> procedure as documented-but-not-live-tested until that report says otherwise.
+> **Verified scope:** the behaviour below was checked against the generated WiX MSI
+> and NSIS scripts *and* by a live silent NSIS install + native uninstall on Windows
+> 11 (per-user path, shortcuts, uninstall registration, settings retention). The
+> interactive wizard, install-over-existing (upgrade), MSI install/uninstall, and
+> launching the app from its installed location were **not** exercised — see
+> [TEST-REPORT.md](TEST-REPORT.md#not-verified--disclosed) for the precise list.
 
 ## System requirements
 
@@ -18,7 +18,7 @@ Nectar on Windows, plus first-launch setup and troubleshooting.
 | WebView2 runtime | Preinstalled on Windows 11. On Windows 10 the installer downloads Microsoft's bootstrapper if missing — an internet connection is needed **during setup only** in that case |
 | Disk space | ~40 MB for the application (installers are ~6–10 MB) |
 | Display | Any; single and multi-monitor setups supported |
-| Administrator rights | **Not required** for the default *Just me* install. Only *All users* (NSIS) or the MSI need elevation, because they write to `Program Files` |
+| Administrator rights | **Not required** for the NSIS installer (per-user install under `%LOCALAPPDATA%`). The MSI installs machine-wide under `Program Files` and does need elevation |
 
 There are **no services, drivers, or scheduled tasks**, and no kernel components.
 Autostart (optional, off by default) is a single per-user `Run` entry that you can
@@ -31,9 +31,9 @@ The **only official source** is this repository's
 
 | File | What it is |
 | --- | --- |
-| `BloodWing-Nectar-Setup-<version>-x64.exe` | NSIS installer — choose *Just me* (no admin) or *All users* (admin) |
-| `BloodWing-Nectar-<version>-x64.msi` | WiX MSI installer — machine-wide install under `Program Files` (needs admin) |
-| `BloodWing-Nectar-Portable-<version>-x64.zip` | Portable build — unpack and run, no installation |
+| `BloodWing-Island-Setup-<version>-x64.exe` | NSIS installer — per-user, never asks for administrator rights |
+| `BloodWing-Island-<version>-x64.msi` | WiX MSI installer — machine-wide install under `Program Files` (needs admin) |
+| `BloodWing-Island-Portable-<version>-x64.zip` | Portable build — unpack and run, no installation |
 | `SHA256SUMS.txt` | SHA-256 checksums of the files above |
 
 Do not download builds from anywhere else. If you found this project mirrored
@@ -44,8 +44,8 @@ release.
 
 | Situation | Choice |
 | --- | --- |
-| Normal personal machine, no admin prompt wanted | **NSIS setup → "Just me"** (default) |
-| Shared machine / want it under `Program Files` | NSIS setup → "All users" (admin), or the **MSI** |
+| Normal personal machine, no admin prompt wanted | **NSIS setup** (per-user, no elevation) |
+| Shared machine / want it under `Program Files` | **MSI** (admin required) |
 | No installation, just try it | **Portable zip** |
 
 ### Verifying your download (recommended)
@@ -55,7 +55,7 @@ Unsigned installers plus SmartScreen warnings make checksum verification worth t
 
 ```powershell
 # Compare this output with SHA256SUMS.txt from the same release
-Get-FileHash .\BloodWing-Nectar-Setup-1.4.1-bloodwing.1-x64.exe -Algorithm SHA256
+Get-FileHash .\BloodWing-Island-Setup-1.4.1-bloodwing.1-x64.exe -Algorithm SHA256
 ```
 
 If the hash matches, the file is exactly what was published. If it does not match,
@@ -68,25 +68,25 @@ delete the file and download it again from the official release page.
    build is not code-signed. Choose **More info** → **Run anyway**. (Never disable
    Defender or SmartScreen for this — the prompt is normal for unsigned open-source
    binaries and the checksum above is the reliable check.)
-3. NSIS installer — pick the install scope:
-   - **Just me** installs to `%LOCALAPPDATA%\BloodWing` and needs no admin rights.
-   - **All users** installs to `%ProgramFiles%\BloodWing` and asks for elevation once.
+3. The NSIS installer installs **for the current user only**, under
+   `%LOCALAPPDATA%\BloodWing Island`, and never asks for elevation. If you
+   need a machine-wide install, use the MSI instead.
 4. Continue through the wizard. It installs the application, creates a **Start Menu
-   shortcut** (`BloodWing`), and registers an uninstaller. The last page offers an
-   optional **desktop shortcut** checkbox.
-   (The MSI creates both the Start Menu and desktop shortcuts.)
+   shortcut** (`BloodWing Island`) and registers an entry in Windows Settings → Apps.
+   The last page offers an optional **desktop shortcut** checkbox.
+   (The MSI creates both the Start Menu and desktop shortcuts for all users.)
 5. Finish the wizard. The app starts automatically (unless you ran it silently).
 
 ### Where things land
 
 | Item | Location |
 | --- | --- |
-| Application (NSIS "Just me") | `%LOCALAPPDATA%\BloodWing\BloodWing.exe` |
-| Application (NSIS "All users" / MSI) | `%ProgramFiles%\BloodWing\BloodWing.exe` |
-| Start Menu shortcut | `BloodWing` in the Start Menu |
-| Desktop shortcut | Only if you enabled the checkbox (NSIS) or used the MSI |
+| Application (NSIS) | `%LOCALAPPDATA%\BloodWing Island\BloodWing.exe` |
+| Application (MSI) | `%ProgramFiles%\BloodWing Island\BloodWing.exe` |
+| Start Menu shortcut | `BloodWing Island` in the Start Menu |
+| Desktop shortcut | Only if you enabled the checkbox (NSIS); always for the MSI |
 | Your settings | `%APPDATA%\com.bloodwing.notch\settings.json` |
-| Uninstaller | `uninstall.exe` in the install directory (plus the Windows Apps list entry) |
+| Uninstaller | The Windows Settings → Apps entry; after the first launch a copy also exists as `uninstall.exe` in the install directory |
 
 ## First launch and setup
 
@@ -120,7 +120,8 @@ expected). Upgrades are done with the installer:
 2. Run the newer installer. Installing over an existing installation **replaces the
    application files in place**; it does not create a second entry, a second Start
    Menu shortcut, or a second autostart entry — the installer keeps the existing
-   uninstaller registered and rewrites the shortcut.
+   uninstaller registered and rewrites the shortcut. (This follows from the
+   generated installer script; the upgrade path itself was not live-tested.)
 3. **Your settings are preserved** — upgrades never touch
    `%APPDATA%\com.bloodwing.notch\`.
 4. Start the app again. Your pin layout, dock/notch configuration and connected
@@ -139,13 +140,15 @@ Two supported routes, both restoring normal Windows behaviour:
 
 1. Quit BloodWing from the tray.
 2. **Settings → Apps → Installed apps** (or *Add or remove programs*).
-3. Find **BloodWing**, choose **Uninstall** and confirm.
-   - NSIS installs: the bundled `uninstall.exe` runs.
+3. Find **BloodWing Island**, choose **Uninstall** and confirm.
+   - NSIS installs: BloodWing's own uninstaller runs (the registered command points at
+     `uninstall.exe`, or at `BloodWing.exe --uninstall` before the app has been
+     launched once).
    - MSI installs: the standard MSI uninstall runs.
 4. The uninstaller removes the application files, the Start Menu shortcut, the
-   desktop shortcut (if created) and the uninstall registry entry. The native
-   taskbar is restored as the app exits — the uninstaller does not need to touch
-   Explorer.
+   desktop shortcut (if created) and the app's registry entries (the uninstall
+   entry and the installer's manufacturer key). The native taskbar is restored as
+   the app exits — the uninstaller does not need to touch Explorer.
 
 **B. From inside the app**
 
@@ -181,7 +184,7 @@ Link`; the names are retained from upstream for compatibility).
 | --- | --- |
 | SmartScreen: "Windows protected your PC" | Expected for unsigned builds. *More info* → *Run anyway*, or verify the SHA-256 checksum first. Do not disable Defender. |
 | "This app can't run on your PC" | You downloaded an ARM/32-bit build or the file is corrupted. Only x64 builds are published. |
-| Installer asks for admin when you chose *Just me* | It shouldn't — that scope writes only to `%LOCALAPPDATA%`. If it does, re-download the installer (your copy may be corrupted) and report it as an issue. |
+| The installer asks for administrator rights | The NSIS build is per-user and should never prompt. The MSI always does. If the NSIS setup prompts, verify the SHA-256 checksum — your copy may be modified. |
 | App installs but windows stay blank | WebView2 missing or blocked. Install the [WebView2 runtime](https://developer.microsoft.com/microsoft-edge/webview2/) or run the installer with internet access so it can fetch the bootstrapper. |
 | The taskbar is hidden and the app won't start | Run `scripts/restore-taskbar.ps1` from the repository (no admin needed), or restore the taskbar manually: Task Manager → restart Windows Explorer. Then check `%APPDATA%\com.bloodwing.notch\logs\bloodwing.log`. |
 | Antivirus flags the installer or the app | Unsigned, newly published installers sometimes trigger heuristic warnings. Verify the SHA-256 checksum before whitelisting, and prefer reporting the detection to your AV vendor if the checksum matches. |

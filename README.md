@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="public/bloodwing-mark.png" width="128" alt="BloodWing Nectar mark" />
+<img src="public/bloodwing-mark.png" width="128" alt="BloodWing Island mark" />
 
-# BloodWing Nectar
+# BloodWing Island
 
 **A customised Windows desktop notch and animated dock — dark glass styling with restrained red accents.**
 
@@ -17,7 +17,7 @@
 
 ## Overview
 
-**BloodWing Nectar** is a personally maintained, rebranded build of
+**BloodWing Island** is a personally maintained, rebranded build of
 [Nectar](https://github.com/kua8/Nectar) — a notch and dock replacement for the
 Windows taskbar. It keeps everything the upstream project does (media, visualizer,
 weather, battery, calendar, Pomodoro, taskbar mirroring, tray, search and
@@ -160,18 +160,19 @@ Windows on ARM and 32-bit Windows are not supported.
 - ~40 MB free disk space for the application (installer is ~6–10 MB)
 - A display (multi-monitor supported)
 
-No administrator rights are required for the default *Just me* install. There are no
-services, drivers or scheduled tasks; autostart (optional) is a single per-user Run
-entry, which you can toggle in **Settings → General**.
+The NSIS installer installs per-user and never asks for administrator rights. There
+are no services, drivers or scheduled tasks; autostart (optional) is a single per-user
+Run entry, which you can toggle in **Settings → General**.
 
 ## Installation
 
 Pick either route — **the GitHub Releases page is the only official source**:
 
 1. **Installer (recommended):** download the latest
-   [`BloodWing-Nectar-Setup-<version>-x64.exe`](../../releases/latest) (NSIS) — it
-   offers *Just me* (no admin) or *All users* (admin). An MSI is published alongside it.
-2. **Portable:** download `BloodWing-Nectar-Portable-<version>-x64.zip`, unpack
+   [`BloodWing-Island-Setup-<version>-x64.exe`](../../releases/latest) (NSIS) — it
+   installs for the current user with no administrator prompt. An MSI is published
+   alongside it for machine-wide installs.
+2. **Portable:** download `BloodWing-Island-Portable-<version>-x64.zip`, unpack
    anywhere, run `BloodWing.exe`. Settings live in
    `%APPDATA%\com.bloodwing.notch` either way.
 
@@ -191,8 +192,8 @@ and the Visual Studio C++ build tools (the Rust MSVC target needs them).
 [BUILD.md](BUILD.md) has the detailed, tested instructions.
 
 ```powershell
-git clone https://github.com/BloodWingXMalik/BloodWing-Nectar.git
-cd BloodWing-Nectar
+git clone https://github.com/BloodWingXMalik/BloodWing-Island.git
+cd BloodWing-Island
 bun install
 bun run tauri dev        # dev run with hot reload
 bun run tauri build      # production build + MSI + NSIS installers
@@ -249,8 +250,9 @@ Configuration lives entirely on your machine and is never uploaded anywhere.
   check will therefore fail — that is expected.
 - **Single-machine verification.** Everything listed in [TEST-REPORT.md](TEST-REPORT.md)
   was verified on one Windows 11 x64 laptop with a single display. Multi-monitor,
-  Explorer-restart, sleep/resume and install/uninstall flows are implemented and
-  code-reviewed but not live-verified there.
+  Explorer-restart, sleep/resume, the interactive installer wizard, upgrades and
+  MSI installs are implemented and code-reviewed but not live-verified there; the
+  per-user NSIS install/uninstall path was exercised (see the test report).
 - **Installers are unsigned** (no code-signing certificate), hence SmartScreen
   warnings.
 - **`installer-app/`** (upstream's separate installer UI project) ships
@@ -296,9 +298,9 @@ Grounded in the source code of this repository:
 - **Calendar credentials** are stored in the Windows Credential Manager (keyring),
   not in settings files.
 - **All configuration is local** (`%APPDATA%\com.bloodwing.notch`). Uninstalling
-  does not delete it unless you ask it to (see INSTALLATION.md).
+  keeps it; INSTALLATION.md shows how to remove it manually.
 - **Shell safety:** the app restores taskbar visibility on exit; the uninstaller
-  removes its own files, shortcuts and Run entry and touches nothing else.
+  removes its own files, shortcuts and registry entries and touches nothing else.
 - **Reporting a vulnerability:** see [SECURITY.md](SECURITY.md).
 
 ## License and attribution

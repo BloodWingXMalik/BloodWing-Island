@@ -1,25 +1,27 @@
-# BloodWing 1.4.1 — Release Notes
+# BloodWing Island 1.4.1 — Release Notes
 
-BloodWing is a personal, rebranded build of [Nectar](https://github.com/kua8/Nectar)
-1.4.1 (upstream commit `62c2324`, itself a fork of
-[Bloom](https://github.com/SehajveerSingh2005/bloom) by Sehajveer Singh). All original
-functionality is preserved: notch, dock, media, visualizer, weather, battery,
-calendar, Pomodoro, taskbar mirroring, tray, search and multi-monitor support.
-License: GPL-3.0, unchanged.
+BloodWing Island is a personal, rebranded build of
+[Nectar](https://github.com/kua8/Nectar) 1.4.1 (upstream commit `62c2324`, itself a
+fork of [Bloom](https://github.com/SehajveerSingh2005/bloom) by Sehajveer Singh). All
+original functionality is preserved: notch, dock, media, visualizer, weather,
+battery, calendar, Pomodoro, taskbar mirroring, tray, search and multi-monitor
+support. License: GPL-3.0, unchanged.
 
 Built on `bloodwing-customization` from `62c2324`. Verified as described in
 [TEST-REPORT.md](TEST-REPORT.md).
 
 ## What's in this build
 
-**Identity.** The app is now BloodWing end to end: window titles, tray menu, mutex
-and event names (`BloodWingSingleInstance`), installer and uninstaller, registry
-keys (`Software\bloodwing\notch`, `…\Uninstall\BloodWing`), Run entry, log file
-(`bloodwing.log`), diagnostics identity (`com.bloodwing.notch`) and a new icon set
-generated from the BloodWing mark. Config lives in `%APPDATA%\com.bloodwing.notch`.
-Credential storage keeps the upstream keyring service names on purpose so existing
-CalDAV/calendar credentials survive the rename; the `nectar-*` settings schema is
-also preserved for backward compatibility.
+**Identity.** The product is now **BloodWing Island** end to end where the OS sees
+it: NSIS/MSI installers, Start Menu and desktop shortcuts, the Apps list entry
+(`…\Uninstall\BloodWing Island`), uninstaller dialogs, tray tooltip and the
+autostart Run value. The executable stays `BloodWing.exe` and the in-app brand stays
+"BloodWing". Installed copies live in `%LOCALAPPDATA%\BloodWing Island` (NSIS,
+per-user) or `%ProgramFiles%\BloodWing Island` (MSI); config lives in
+`%APPDATA%\com.bloodwing.notch`. Internal identifiers are unchanged on purpose:
+`com.bloodwing.notch`, the `nectar-*` settings schema, the `BloodWingSingleInstance`
+mutex/event names and the keyring service names `Nectar CalDAV`/`Nectar Calendar
+Link`, so existing settings and connected calendars survive the rename.
 
 **Theme.** A charcoal-black and red design layer over every window
 (`src/bloodwing.css` plus per-window theme layers): background `#0B0C0F`, elevated
@@ -58,11 +60,11 @@ this build), [TEST-REPORT.md](TEST-REPORT.md).
 
 ## Install
 
-- **Installer (recommended):** run `BloodWing-Nectar-Setup-1.4.1-bloodwing.1-x64.exe`
-  (NSIS — choose *Just me* for a no-admin install, or *All users*), or
-  `BloodWing-Nectar-1.4.1-bloodwing.1-x64.msi` (WiX, machine-wide, needs admin).
+- **Installer (recommended):** run `BloodWing-Island-Setup-1.4.1-bloodwing.1-x64.exe`
+  (NSIS — per-user, never asks for administrator rights), or
+  `BloodWing-Island-1.4.1-bloodwing.1-x64.msi` (WiX, machine-wide, needs admin).
   Both put your native taskbar back on uninstall.
-- **Portable:** unzip `BloodWing-Nectar-Portable-1.4.1-bloodwing.1-x64.zip` and run
+- **Portable:** unzip `BloodWing-Island-Portable-1.4.1-bloodwing.1-x64.zip` and run
   `BloodWing.exe` directly; settings go to `%APPDATA%\com.bloodwing.notch`. Running
   the portable exe from a non-installed location intentionally skips the uninstaller
   registry "healing" (it only applies to installed copies).
@@ -72,7 +74,8 @@ this build), [TEST-REPORT.md](TEST-REPORT.md).
 ## Uninstall / rollback
 
 - Uninstall from Windows Settings › Apps, or **Settings › About** inside the app.
-  Both restore the taskbar as part of removal.
+  Both restore the taskbar as part of removal and keep your settings under
+  `%APPDATA%\com.bloodwing.notch`.
 - Rollback: keep a copy of the previous `settings.json` (or the automatic
   `settings.backup.json`) and reinstall the previous build; no data migration is
   needed since the settings schema did not change.
@@ -95,8 +98,10 @@ this build), [TEST-REPORT.md](TEST-REPORT.md).
 - Internal identifiers kept from upstream on purpose (documented in
   [CUSTOMIZATION.md](CUSTOMIZATION.md)): `nectar-*` settings keys, Tauri command
   names, `--nectar-*` CSS variables, keyring service names.
-- Installers were built but not executed on this machine; install/uninstall paths
-  are code-reviewed but not live-tested (see TEST-REPORT.md).
+- Installer coverage is partial: a silent per-user NSIS install and the native
+  uninstaller were exercised on one machine (see TEST-REPORT.md). The interactive
+  wizard, install-over-existing (upgrade), MSI install/uninstall and the final
+  build's uninstaller registry-cleanup fix were not exercised live.
 
 ## Artifacts
 
@@ -104,25 +109,25 @@ Published release assets (all x64):
 
 | File | Size |
 | --- | --- |
-| `BloodWing-Nectar-Setup-1.4.1-bloodwing.1-x64.exe` (NSIS) | 6.42 MB |
-| `BloodWing-Nectar-1.4.1-bloodwing.1-x64.msi` (WiX) | 9.36 MB |
-| `BloodWing-Nectar-Portable-1.4.1-bloodwing.1-x64.zip` | 9.07 MB |
+| `BloodWing-Island-Setup-1.4.1-bloodwing.1-x64.exe` (NSIS) | 6.45 MB |
+| `BloodWing-Island-1.4.1-bloodwing.1-x64.msi` (WiX) | 9.36 MB |
+| `BloodWing-Island-Portable-1.4.1-bloodwing.1-x64.zip` | 9.07 MB |
 | `SHA256SUMS.txt` | checksums for the three files above |
 
 ### Checksums (SHA-256)
 
 ```
-7e982969b1a2159cb3503ec24b77793d2c0e57274b9270539bb3ea3bf50e5d90  BloodWing-Nectar-Setup-1.4.1-bloodwing.1-x64.exe
-f2d35b45f505be41d335c16b0a0bf02ea28622131cd913acceb5dc771dbe9e9c  BloodWing-Nectar-1.4.1-bloodwing.1-x64.msi
-52a1250c9e77d6669415f6f93a840261eb8c40c4c950111384b3b4b3ec5d4b13  BloodWing-Nectar-Portable-1.4.1-bloodwing.1-x64.zip
+8d9ee46c1ced64cf0c2ce8a4d54a1f15b1927cba93f1b2aa7fa9ceb8bfce3265  BloodWing-Island-Setup-1.4.1-bloodwing.1-x64.exe
+b12297e3389c63039ae48b557c4ef99a6cfe3a00b539aae2a6c11b94e6553d72  BloodWing-Island-1.4.1-bloodwing.1-x64.msi
+214ccd62a42729b654c9020802ee697d68e340421ca481cdb61696e0ff2e45fc  BloodWing-Island-Portable-1.4.1-bloodwing.1-x64.zip
 ```
 
 Verify on Windows:
 
 ```powershell
-Get-FileHash .\BloodWing-Nectar-Setup-1.4.1-bloodwing.1-x64.exe -Algorithm SHA256
+Get-FileHash .\BloodWing-Island-Setup-1.4.1-bloodwing.1-x64.exe -Algorithm SHA256
 ```
 
 Local `bun run tauri build` output keeps Tauri's default artifact names
-(`BloodWing_1.4.1_x64-setup.exe`, `BloodWing_1.4.1_x64_en-US.msi`); the release
-workflow renames them to the assets above.
+(`BloodWing Island_1.4.1_x64-setup.exe`, `BloodWing Island_1.4.1_x64_en-US.msi`); the
+release workflow renames them to the assets above.

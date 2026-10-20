@@ -1,8 +1,8 @@
-# BloodWing 1.4.1 — Test Report
+# BloodWing Island 1.4.1 — Test Report
 
-Verification of the BloodWing build of Nectar (upstream `kua8/Nectar` @ `62c2324`,
-GPL-3.0). Everything below was run against this repository on the machine described
-below. Items that were **not** verified are listed in
+Verification of BloodWing Island (the BloodWing build of Nectar; upstream
+`kua8/Nectar` @ `62c2324`, GPL-3.0). Everything below was run against this repository
+on the machine described below. Items that were **not** verified are listed in
 [Not verified](#not-verified--disclosed) — nothing in this report is estimated or
 copied from upstream.
 
@@ -33,6 +33,9 @@ copied from upstream.
 | Native taskbar hidden while dock is enabled | **pass** (manual) |
 | Graceful quit restores the taskbar, clears the marker, leaves no stray processes | **pass** (manual, 2×) |
 | `scripts/restore-taskbar.ps1` (emergency recovery) | **pass** (manual) |
+| Silent per-user NSIS install (`/S`, no elevation) | **pass** (exit 0 in 4.1 s) |
+| Installed path, shortcuts, uninstall entry, scope marker | **pass** |
+| Native uninstall (files, shortcuts, uninstall entry) | **partial** — settings kept; manufacturer key was left behind (fixed after the test, see below) |
 | Idle CPU | **0.1 %** of total (24 logical cores) |
 | Brightness slider latency fix | implemented; component costs measured (see below) |
 
@@ -161,12 +164,42 @@ build succeeds with the fix. **Not verified:** an end-to-end drag measurement in
 UI (the session was stopped on request while setting up the drag test); the numbers
 above are component-level measurements plus code inspection.
 
+## Installer verification (live, NSIS)
+
+A silent per-user install was performed on the machine above with the NSIS setup
+(`BloodWing-Island-Setup-1.4.1-bloodwing.1-x64.exe /S`), followed by removal through
+the app's native uninstaller. This is the only installer path exercised live; the
+disclosure below lists what was not.
+
+**Install.** Exit code 0 after 4.1 s, with no elevation prompt (the generated script
+uses `RequestExecutionLevel user`). Observed result:
+
+| Expectation | Observed |
+| --- | --- |
+| Install directory | `%LOCALAPPDATA%\BloodWing Island` |
+| Files | `BloodWing.exe` and `.install-scope` containing `user` |
+| Shortcuts | Start Menu + desktop `BloodWing Island.lnk` |
+| Uninstall entry | `HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\BloodWing Island` — DisplayName `BloodWing Island`, DisplayVersion `1.4.1`, Publisher `BloodWing`, InstallLocation = the install directory, UninstallString `"...\BloodWing.exe" --uninstall` (fresh install, before first launch) |
+| Autostart | no Run entry added by the installer |
+
+**Uninstall.** `BloodWing.exe --uninstall` (the command the Windows Apps entry invokes
+on a fresh install) removed the application folder, both shortcuts and the uninstall
+registry entry. `%APPDATA%\com.bloodwing.notch\settings.json` was still present
+afterwards, and the native taskbar was visible before and after.
+
+**Found and fixed afterwards.** The uninstaller left the NSIS installer's
+manufacturer key (`HKCU\Software\BloodWing\BloodWing Island`) behind, pointing at the
+deleted folder. `native_uninstall::remove_registry` now deletes it. The published
+binaries include that fix; it is compiled and code-reviewed but was not exercised
+live (no further installs were performed on this machine).
+
 ## Not verified / disclosed
 
-- **Installer flows.** The MSI and NSIS installers were built but not executed —
-  installing would modify this machine's registry and Start menu, which was out of
-  scope for this session. Install/uninstall behavior is covered by the NSIS hooks
-  added in this build and by the app's own uninstaller, but not exercised here.
+- **Installer flows beyond the silent per-user path.** The interactive NSIS wizard,
+  install-over-existing (upgrade), MSI install/uninstall, and launching the app from
+  its installed location were not exercised. The final build also contains the
+  one-line uninstaller cleanup fix described above and was not re-tested live; no
+  further installs were performed on the test machine.
 - **Multi-monitor behavior, Explorer restart, sleep/resume, fullscreen restore.**
   Implemented and code-reviewed (watchdog re-registers AppBars after an Explorer
   restart; `WM_ENDSESSION` handler restores the taskbar on logoff/shutdown), but
@@ -178,12 +211,13 @@ above are component-level measurements plus code inspection.
 
 ## Artifacts
 
-| File | Bytes | Size |
-| --- | --- | --- |
-| `release/BloodWing.exe` (portable) | 28,519,424 | 27.20 MB |
-| `release/BloodWing_1.4.1_x64_en-US.msi` | 9,818,112 | 9.36 MB |
-| `release/BloodWing_1.4.1_x64-setup.exe` (NSIS) | 6,734,967 | 6.42 MB |
+| Release asset | Bytes | Size | SHA-256 |
+| --- | --- | --- | --- |
+| `BloodWing-Island-Setup-1.4.1-bloodwing.1-x64.exe` (NSIS) | 6,763,567 | 6.45 MB | `8d9ee46c1ced64cf0c2ce8a4d54a1f15b1927cba93f1b2aa7fa9ceb8bfce3265` |
+| `BloodWing-Island-1.4.1-bloodwing.1-x64.msi` (WiX) | 9,818,112 | 9.36 MB | `b12297e3389c63039ae48b557c4ef99a6cfe3a00b539aae2a6c11b94e6553d72` |
+| `BloodWing-Island-Portable-1.4.1-bloodwing.1-x64.zip` | 9,514,098 | 9.07 MB | `214ccd62a42729b654c9020802ee697d68e340421ca481cdb61696e0ff2e45fc` |
 
-All three are copied from `src-tauri/target/release/` after the final build. The
-portable exe is self-contained (WebView2 runtime is required and already present on
-Windows 11).
+The installers are built in `src-tauri/target/release/bundle/` (Tauri's default
+names) and renamed for the release. `release/BloodWing.exe` is the portable payload
+inside the zip (28,520,448 bytes): a single self-contained executable; the WebView2
+runtime is required and already present on Windows 11.

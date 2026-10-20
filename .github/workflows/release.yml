@@ -99,9 +99,9 @@ jobs:
           if (-not $nsis) { throw "NSIS installer not found in bundle/nsis" }
           if (-not $msi)  { throw "MSI not found in bundle/msi" }
 
-          Copy-Item $nsis.FullName "$dist/BloodWing-Nectar-Setup-$version-x64.exe"
-          Copy-Item $msi.FullName  "$dist/BloodWing-Nectar-$version-x64.msi"
-          Compress-Archive -Path $exe -DestinationPath "$dist/BloodWing-Nectar-Portable-$version-x64.zip" -Force
+          Copy-Item $nsis.FullName "$dist/BloodWing-Island-Setup-$version-x64.exe"
+          Copy-Item $msi.FullName  "$dist/BloodWing-Island-$version-x64.msi"
+          Compress-Archive -Path $exe -DestinationPath "$dist/BloodWing-Island-Portable-$version-x64.zip" -Force
 
           $lines = Get-ChildItem $dist -File | Sort-Object Name | ForEach-Object {
             $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower()
@@ -117,6 +117,6 @@ jobs:
         shell: bash
         run: |
           gh release create "$GITHUB_REF_NAME" dist-release/* \
-            --title "BloodWing Nectar $GITHUB_REF_NAME" \
+            --title "BloodWing Island $GITHUB_REF_NAME" \
             --notes-file RELEASE-NOTES.md \
             --verify-tag

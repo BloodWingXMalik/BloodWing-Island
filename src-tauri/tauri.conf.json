@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "BloodWing",
+  "productName": "BloodWing Island",
   "mainBinaryName": "BloodWing",
   "version": "1.4.1",
   "identifier": "com.bloodwing.notch",
@@ -137,7 +137,7 @@
     ],
     "windows": {
       "nsis": {
-        "installMode": "both",
+        "installMode": "currentUser",
         "headerImage": "../installer/assets/header.bmp",
         "sidebarImage": "../installer/assets/sidebar.bmp",
         "installerIcon": "icons/icon.ico",

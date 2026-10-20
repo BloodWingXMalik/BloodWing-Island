@@ -52,10 +52,10 @@ $env:Path = "$env:LOCALAPPDATA\Microsoft\WinGet\Links;$env:Path"
 | Artifact | Path |
 | --- | --- |
 | App executable | `src-tauri/target/release/BloodWing.exe` |
-| MSI installer | `src-tauri/target/release/bundle/msi/BloodWing_1.4.1_x64_en-US.msi` |
-| NSIS installer (recommended) | `src-tauri/target/release/bundle/nsis/BloodWing_1.4.1_x64-setup.exe` |
+| MSI installer | `src-tauri/target/release/bundle/msi/BloodWing Island_1.4.1_x64_en-US.msi` |
+| NSIS installer (recommended) | `src-tauri/target/release/bundle/nsis/BloodWing Island_1.4.1_x64-setup.exe` |
 
-The NSIS installer supports **Just me** and **All users** installs and uses the dark BloodWing wizard styling from `installer/build/installer.nsh` with the bitmaps in `installer/assets/`.
+The NSIS installer is **per-user only** (it never requests elevation, so there is no UAC prompt) and uses the dark BloodWing wizard styling from `installer/build/installer.nsh` with the bitmaps in `installer/assets/`. The MSI bundle is the machine-wide option.
 
 ### Auto-updater note
 

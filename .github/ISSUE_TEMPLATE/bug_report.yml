@@ -1,5 +1,5 @@
 name: Bug report
-description: Something in BloodWing Nectar isn't working the way it should
+description: Something in BloodWing Island isn't working the way it should
 title: "[Bug]: "
 labels: ["bug"]
 body:
@@ -9,8 +9,8 @@ body:
         Thanks for taking the time to report this. The more detail you give, the faster it can be fixed.
 
         Before filing, please skim the
-        [Troubleshooting section](https://github.com/BloodWingXMalik/BloodWing-Nectar/blob/HEAD/README.md#troubleshooting)
-        and search [existing issues](https://github.com/BloodWingXMalik/BloodWing-Nectar/issues)
+        [Troubleshooting section](https://github.com/BloodWingXMalik/BloodWing-Island/blob/HEAD/README.md#troubleshooting)
+        and search [existing issues](https://github.com/BloodWingXMalik/BloodWing-Island/issues)
         in case it is already reported.
 
         This project is a fork of [Nectar](https://github.com/kua8/Nectar). If the
@@ -63,7 +63,7 @@ body:
   - type: input
     id: app-version
     attributes:
-      label: BloodWing Nectar version
+      label: BloodWing Island version
       description: "Shown in the tray menu or Settings → About — e.g. 1.4.1-bloodwing.1, or \"built from source (commit …)\"."
       placeholder: 1.4.1-bloodwing.1
     validations:

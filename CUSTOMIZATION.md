@@ -8,18 +8,22 @@ Everything below is implemented in the real application — no mockups. All upst
 
 | Thing | Upstream | BloodWing |
 | --- | --- | --- |
-| Product name | Nectar | **BloodWing** (`productName`) |
+| Product name | Nectar | **BloodWing Island** (`productName`) |
 | App identifier | `com.kua8.nectar` | **`com.bloodwing.notch`** (isolates config from any installed Nectar) |
-| Binary name | `nectar.exe` | **`BloodWing.exe`** (`mainBinaryName`) |
+| Binary name | `nectar.exe` | **`BloodWing.exe`** (`mainBinaryName` — kept short; the product name is used for the installer, shortcuts and Apps list) |
 | Window titles | `nectar`, `Settings`, `Calendar`, `Overlay`, `Nectar Dock` | `BloodWing`, `BloodWing Settings`, `BloodWing Calendar`, `BloodWing Overlay`, `BloodWing Dock` |
 | Tray menu | Quit/Restart Nectar | Quit/Restart BloodWing |
 | Single-instance names | `NectarSingleInstance` / `NectarOpenSettings` | `BloodWingSingleInstance` / `BloodWingOpenSettings` |
-| Uninstall registry key | `…\Uninstall\Nectar` | `…\Uninstall\BloodWing` (DisplayName/Publisher = BloodWing) |
+| Uninstall registry key | `…\Uninstall\Nectar` | `…\Uninstall\BloodWing Island` (DisplayName = BloodWing Island, Publisher = BloodWing) |
+| Install directory (per-user NSIS) | `%LOCALAPPDATA%\Nectar` | `%LOCALAPPDATA%\BloodWing Island` |
+| Install directory (MSI) | `%ProgramFiles%\Nectar` | `%ProgramFiles%\BloodWing Island` |
 | Log files | `%APPDATA%\com.kua8.nectar\logs\nectar.log` | `%APPDATA%\com.bloodwing.notch\logs\bloodwing.log` |
 | Hidden display-monitor window class | `NectarDisplayMonitor` | `BloodWingDisplayMonitor` |
 | NSIS installer functions | `NectarGuiInit` etc. | `BloodWingGuiInit` etc. |
 
 Config directory: `%APPDATA%\com.bloodwing.notch\` (derived from the Tauri identifier). Because the identifier changed, BloodWing starts with fresh settings and can run side by side with an installed Nectar without either interfering with the other.
+
+The product name is **BloodWing Island** while the executable is **BloodWing.exe**: Tauri derives the installer's install directory, Start Menu/desktop shortcut names, Apps list entry and uninstall key from `productName`, and the binary name from `mainBinaryName`. Keeping them distinct gives recognisable shortcuts and an unambiguous uninstall entry without renaming the executable that scripts, taskbar-mirroring filters and the single-instance logic already reference. The NSIS installer is per-user only (`%LOCALAPPDATA%\BloodWing Island`) and therefore never requests elevation or shows a UAC prompt; the MSI is the machine-wide option. The per-user directory is also kept separate from any other tool that may use a `BloodWing` folder — the app's native uninstaller deletes its own install directory recursively, so a shared path would be unsafe.
 
 ### Intentionally kept (do not “fix” these)
 
