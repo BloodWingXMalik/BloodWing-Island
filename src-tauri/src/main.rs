@@ -5,6 +5,7 @@ mod state;
 mod utils;
 mod services;
 mod commands;
+mod connectivity;
 mod monitors;
 mod updater;
 mod uninstall_registry;
@@ -29,6 +30,7 @@ use crate::state::*;
 use crate::utils::*;
 use crate::services::*;
 use crate::commands::*;
+use crate::connectivity::*;
 
 unsafe extern "system" fn ctrl_handler(ctrl_type: u32) -> BOOL {
     // Restore the native taskbar before the process dies on any console signal:
@@ -166,6 +168,11 @@ fn main() {
             capture_window_thumbnail,
             get_wifi_status,
             set_wifi_state,
+            scan_wifi_networks,
+            connect_wifi,
+            disconnect_wifi,
+            open_location_settings,
+            get_bluetooth_devices,
             get_bluetooth_state,
             set_bluetooth_state,
             open_bluetooth_settings,

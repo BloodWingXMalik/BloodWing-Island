@@ -69,6 +69,14 @@ noted. See [CUSTOMIZATION.md](CUSTOMIZATION.md) for what this fork changed.
     clock and configurable status widgets.
   - **Calendar** — month view with CalDAV/ICS integration and a built-in Pomodoro
     timer plus stopwatch.
+- **Connectivity panel** — the Wi-Fi button on the notch opens an in-notch panel
+  that lists saved/available networks and connects with a password prompt. Bluetooth
+  has its own toggle and paired-device list; pairing new devices opens Windows
+  Settings. Nearby-network scanning requires Windows Location Services, so the panel
+  falls back to saved profiles and shows a shortcut when location is off.
+- **Stopwatch in the notch** — a running stopwatch replaces the clock continuously
+  (with a stopwatch glyph) and returns to the clock when paused or reset. The timer
+  still alternates with the clock while it runs.
 - **Mouse-wheel or trackpad-swipe** mode switching, or pin a mode in place.
 - **Media awareness** — when music starts, the notch can surface the player
   automatically.

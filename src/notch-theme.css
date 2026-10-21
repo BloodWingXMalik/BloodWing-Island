@@ -461,3 +461,536 @@ html.bw-reduce-motion .notch-ambient-glow img {
 html.bw-motion-minimal .notch-ambient-glow {
     display: none;
 }
+
+/* ── Notch Wi-Fi shortcut ───────────────────────────────────────────────── */
+
+.bw-notch-wifi {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--nectar-text, var(--bw-text));
+    opacity: 0.72;
+    cursor: pointer;
+    transition:
+        background var(--bw-duration-fast, 140ms) var(--bw-ease-standard, ease),
+        color var(--bw-duration-fast, 140ms) var(--bw-ease-standard, ease),
+        opacity var(--bw-duration-fast, 140ms) var(--bw-ease-standard, ease);
+}
+
+.bw-notch-wifi:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--nectar-accent, var(--bw-accent-hover));
+    opacity: 1;
+}
+
+.bw-notch-wifi.connected {
+    opacity: 0.95;
+}
+
+.bw-notch-wifi:focus-visible {
+    outline: 2px solid var(--nectar-accent, var(--bw-accent));
+    outline-offset: 1px;
+}
+
+/* ── Running stopwatch in the notch center ──────────────────────────────── */
+
+.compact-stopwatch {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-variant-numeric: tabular-nums;
+}
+
+.compact-stopwatch-icon {
+    width: 12px;
+    height: 12px;
+    opacity: 0.62;
+    flex-shrink: 0;
+}
+
+/* ── Connectivity panel ─────────────────────────────────────────────────── */
+
+.connectivity-content {
+    position: absolute;
+    top: 36px;
+    left: 0;
+    width: 100%;
+    height: calc(100% - 36px);
+    box-sizing: border-box;
+    padding: 10px 14px 12px;
+    display: flex;
+    flex-direction: column;
+    z-index: 2;
+    color: var(--nectar-text, var(--bw-text));
+    border-radius: 0 0 18px 18px;
+    overflow: hidden;
+}
+
+.bw-conn-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    height: 100%;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-right: 2px;
+    /* The notch shell sets nowrap for the clock row; panel copy must wrap. */
+    white-space: normal;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
+}
+
+.bw-conn-panel::-webkit-scrollbar,
+.bw-conn-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.bw-conn-panel::-webkit-scrollbar-thumb,
+.bw-conn-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.16);
+    border-radius: 999px;
+}
+
+.bw-conn-section {
+    flex-shrink: 0;
+    padding: 8px 9px;
+    border: 1px solid var(--bw-hairline);
+    border-radius: var(--bw-radius-md);
+    background: var(--nectar-group-bg, rgba(255, 255, 255, 0.055));
+}
+
+/* Let the Wi-Fi list absorb the leftover height so the Bluetooth section and
+   the location notice can stay on screen together. */
+.bw-conn-wifi-on {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.bw-conn-head {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 30px;
+}
+
+.bw-conn-icon {
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    border-radius: var(--bw-radius-sm);
+    color: var(--bw-text-muted);
+    background: rgba(255, 255, 255, 0.055);
+    transition: color 140ms ease, background 140ms ease;
+}
+
+.bw-conn-icon.on {
+    color: #fff;
+    background: var(--nectar-accent, var(--bw-accent));
+    box-shadow: 0 0 12px rgba(181, 31, 46, 0.25);
+}
+
+.bw-conn-titles {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.bw-conn-title {
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.1;
+}
+
+.bw-conn-sub {
+    font-size: 9.5px;
+    line-height: 1.2;
+    color: var(--bw-text-muted);
+    opacity: 0.9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bw-conn-switch {
+    width: 34px;
+    height: 20px;
+    flex-shrink: 0;
+    position: relative;
+    padding: 0;
+    border: 1px solid var(--bw-border);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+    transition: background 150ms ease, border-color 150ms ease;
+}
+
+.bw-conn-switch span {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+    transition: transform 150ms cubic-bezier(0.3, 0.9, 0.4, 1);
+}
+
+.bw-conn-switch.on {
+    background: var(--nectar-accent, var(--bw-accent));
+    border-color: transparent;
+}
+
+.bw-conn-switch.on span {
+    transform: translateX(14px);
+}
+
+.bw-conn-switch:focus-visible {
+    outline: 2px solid var(--nectar-accent, var(--bw-accent));
+    outline-offset: 2px;
+}
+
+.bw-conn-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    min-height: 18px;
+    margin: 3px 1px 2px;
+}
+
+.bw-conn-toolbar button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--bw-text-muted);
+    font-family: inherit;
+    font-size: 9.5px;
+    font-weight: 550;
+    cursor: pointer;
+    transition: color 140ms ease;
+}
+
+.bw-conn-toolbar button:hover:not(:disabled) {
+    color: var(--nectar-text, var(--bw-text));
+}
+
+.bw-conn-toolbar button:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+.bw-conn-notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 1px 0 4px;
+    padding: 5px 7px;
+    border: 1px solid rgba(255, 159, 10, 0.22);
+    border-radius: var(--bw-radius-xs);
+    background: rgba(255, 159, 10, 0.08);
+    font-size: 8.5px;
+    line-height: 1.3;
+    color: rgba(255, 214, 160, 0.9);
+}
+
+.bw-conn-notice span {
+    flex: 1;
+    min-width: 0;
+}
+
+.bw-conn-notice button {
+    flex-shrink: 0;
+    padding: 2px 6px;
+    border: 1px solid rgba(255, 159, 10, 0.3);
+    border-radius: 4px;
+    background: transparent;
+    color: inherit;
+    font-family: inherit;
+    font-size: 8.5px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.bw-conn-notice button:hover {
+    background: rgba(255, 159, 10, 0.14);
+}
+
+.bw-conn-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
+}
+
+.bw-conn-bt-list {
+    flex: 0 0 auto;
+    max-height: 88px;
+}
+
+.bw-conn-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 5px 6px;
+    border: 0;
+    border-radius: var(--bw-radius-sm);
+    background: transparent;
+    color: inherit;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background 130ms ease;
+}
+
+.bw-conn-row:hover {
+    background: rgba(255, 255, 255, 0.065);
+}
+
+.bw-conn-row.connected {
+    background: var(--nectar-accent-soft, var(--bw-accent-soft));
+}
+
+.bw-conn-row:disabled {
+    cursor: default;
+    opacity: 0.72;
+}
+
+.bw-conn-row:disabled:hover {
+    background: transparent;
+}
+
+.bw-conn-row.connected:disabled:hover {
+    background: var(--nectar-accent-soft, var(--bw-accent-soft));
+}
+
+.bw-conn-device {
+    cursor: default;
+}
+
+.bw-conn-device:hover {
+    background: transparent;
+}
+
+.bw-conn-saved-icon {
+    flex-shrink: 0;
+    opacity: 0.42;
+}
+
+.bw-conn-signal {
+    width: 14px;
+    height: 12px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: flex-end;
+    gap: 1.5px;
+    color: var(--nectar-text, var(--bw-text));
+}
+
+.bw-conn-signal i {
+    width: 2.5px;
+    border-radius: 1px;
+    background: currentColor;
+    opacity: 0.22;
+}
+
+.bw-conn-signal i.on {
+    opacity: 0.9;
+}
+
+.bw-conn-row-main {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.bw-conn-row-name {
+    font-size: 10.5px;
+    font-weight: 550;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bw-conn-row-sub {
+    font-size: 8.5px;
+    line-height: 1.15;
+    color: var(--bw-text-muted);
+    opacity: 0.8;
+}
+
+.bw-conn-lock {
+    flex-shrink: 0;
+    opacity: 0.4;
+}
+
+.bw-conn-check {
+    flex-shrink: 0;
+    color: var(--nectar-accent, var(--bw-accent-hover));
+}
+
+.bw-conn-bt-on {
+    flex-shrink: 0;
+    color: var(--nectar-accent, var(--bw-accent-hover));
+}
+
+.bw-conn-bt-off {
+    flex-shrink: 0;
+    opacity: 0.4;
+}
+
+.bw-conn-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 6px;
+    font-size: 9.5px;
+    line-height: 1.35;
+    color: var(--bw-text-muted);
+    text-align: center;
+}
+
+.bw-conn-off {
+    min-height: 26px;
+    padding: 2px 6px;
+    justify-content: flex-start;
+}
+
+.bw-conn-password {
+    margin: 2px 4px 5px 27px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.bw-conn-password-input {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.bw-conn-password-input input {
+    width: 100%;
+    min-width: 0;
+    padding: 5px 42px 5px 8px;
+    border: 1px solid var(--bw-border);
+    border-radius: var(--bw-radius-xs);
+    background: rgba(0, 0, 0, 0.28);
+    color: var(--nectar-text, var(--bw-text));
+    font-family: inherit;
+    font-size: 10px;
+    outline: none;
+    box-sizing: border-box;
+    user-select: text;
+}
+
+.bw-conn-password-input input:focus {
+    border-color: var(--nectar-accent, var(--bw-accent));
+    box-shadow: 0 0 0 2px var(--nectar-accent-soft, var(--bw-accent-soft));
+}
+
+.bw-conn-password-input input::placeholder {
+    color: var(--bw-text-muted);
+    opacity: 0.65;
+}
+
+.bw-conn-reveal {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 2px 4px;
+    border: 0;
+    background: transparent;
+    color: var(--bw-text-muted);
+    font-family: inherit;
+    font-size: 8px;
+    cursor: pointer;
+}
+
+.bw-conn-reveal:hover {
+    color: var(--nectar-text, var(--bw-text));
+}
+
+.bw-conn-password-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.bw-conn-password-actions button {
+    padding: 3px 9px;
+    border: 1px solid var(--bw-border);
+    border-radius: var(--bw-radius-xs);
+    background: transparent;
+    color: var(--bw-text-muted);
+    font-family: inherit;
+    font-size: 9px;
+    font-weight: 550;
+    cursor: pointer;
+}
+
+.bw-conn-password-actions .bw-conn-connect {
+    border-color: transparent;
+    background: var(--nectar-accent, var(--bw-accent));
+    color: #fff;
+}
+
+.bw-conn-password-actions button:hover:not(:disabled) {
+    filter: brightness(1.12);
+}
+
+.bw-conn-password-actions button:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.bw-conn-error {
+    flex-shrink: 0;
+    padding: 1px 6px 0;
+    font-size: 9px;
+    line-height: 1.35;
+    text-align: center;
+    color: var(--bw-danger);
+}
+
+.bw-conn-spin {
+    animation: bw-conn-spin 0.9s linear infinite;
+}
+
+@keyframes bw-conn-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+html.bw-reduce-motion .bw-conn-spin {
+    animation-duration: 2.4s;
+}

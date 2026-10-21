@@ -8,6 +8,27 @@ versions track the upstream Nectar version they are based on, with a fork suffix
 Changes that belong to the original project before the fork point are upstream
 Nectar's; see <https://github.com/kua8/Nectar> for that history.
 
+## [Unreleased]
+
+### Added
+
+- Notch Wi-Fi button and in-notch connectivity panel: list saved/available Wi-Fi
+  networks, connect to a network with an inline password prompt, disconnect, and
+  toggle the Wi-Fi radio. When Windows Location Services is off, Windows blocks
+  nearby-network lists, so the panel shows saved profiles and links to the Location
+  settings page instead of failing silently.
+- Bluetooth section in the connectivity panel: radio toggle, paired-device list with
+  connected state, and a shortcut to Windows Settings for pairing new devices.
+- Native WLAN backend (`connectivity.rs`) for scanning, WPA2/WPA3 profile creation,
+  connecting and disconnecting, plus paired Bluetooth enumeration.
+- WLAN/Bluetooth smoke tests (ignored by default) for manual verification on Windows.
+
+### Fixed
+
+- A running stopwatch now replaces the clock continuously in the notch, with a small
+  stopwatch glyph, instead of rotating out with the clock or being masked by a
+  finished timer. Pausing/resetting returns to the clock.
+
 ## [1.4.1-bloodwing.1] — first BloodWing release
 
 Based on Nectar 1.4.1 (upstream commit `62c23243e326ae79af8855d5f0e542b98aa9ce3f`).

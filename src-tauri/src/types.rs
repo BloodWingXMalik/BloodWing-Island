@@ -107,6 +107,29 @@ pub struct BrightnessChangeEvent {
 pub struct WifiStatus {
     pub enabled: bool,
     pub connected: bool,
+    pub ssid: Option<String>,
+}
+
+#[derive(Clone, Serialize)]
+pub struct WifiNetwork {
+    pub ssid: String,
+    pub signal: u32,
+    pub secured: bool,
+    pub connected: bool,
+    pub has_profile: bool,
+}
+
+#[derive(Clone, Serialize)]
+pub struct WifiScanResult {
+    pub networks: Vec<WifiNetwork>,
+    pub location_required: bool,
+}
+
+#[derive(Clone, Serialize)]
+pub struct BluetoothDeviceInfo {
+    pub name: String,
+    pub address: u64,
+    pub connected: bool,
 }
 
 #[derive(Clone, Serialize)]

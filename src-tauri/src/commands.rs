@@ -3025,7 +3025,12 @@ pub async fn get_wifi_status() -> Result<WifiStatus, String> {
     tauri::async_runtime::spawn_blocking(|| -> Result<WifiStatus, String> {
         let enabled = get_radio_state_sync(windows::Devices::Radios::RadioKind::WiFi)?;
         let connected = enabled && is_wlan_connected_sync();
-        Ok(WifiStatus { enabled, connected })
+        let ssid = if connected {
+            crate::connectivity::current_wifi_ssid_sync()
+        } else {
+            None
+        };
+        Ok(WifiStatus { enabled, connected, ssid })
     })
     .await
     .map_err(|e| e.to_string())?

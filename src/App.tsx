@@ -15,6 +15,13 @@ import { useTrailingThrottle } from "./hooks/useTrailingThrottle";
 import { useCaldav } from "./hooks/useCaldav";
 import { NotchCalendar } from "./components/NotchCalendar";
 import { NotchClock, StopwatchReadout } from "./components/NotchClock";
+import { ConnectivityPanel } from "./components/ConnectivityPanel";
+import type {
+  BluetoothDeviceInfo,
+  WifiNetwork,
+  WifiScanResult,
+  WifiStatus,
+} from "./types/connectivity";
 import { useStopwatch } from "./hooks/useStopwatch";
 import type { WidgetConfig } from "./components/StatusWidgetConfig";
 import {
@@ -234,11 +241,6 @@ function UpdateActivity() {
   );
 }
 
-interface WifiStatus {
-  enabled: boolean;
-  connected: boolean;
-}
-
 interface MediaInfo {
   title: string;
   artist: string;
@@ -386,6 +388,13 @@ function App() {
   const wifiEnabled = wifiStatus?.enabled ?? false;
   const wifiConnected = wifiStatus?.connected ?? false;
   const [bluetoothEnabled, setBluetoothEnabled] = useState(true);
+  const [wifiNetworks, setWifiNetworks] = useState<WifiNetwork[]>([]);
+  const [wifiScanning, setWifiScanning] = useState(false);
+  const [wifiConnecting, setWifiConnecting] = useState<string | null>(null);
+  const [wifiLocationRequired, setWifiLocationRequired] = useState(false);
+  const [bluetoothDevices, setBluetoothDevices] = useState<BluetoothDeviceInfo[]>([]);
+  const [bluetoothDevicesLoading, setBluetoothDevicesLoading] = useState(false);
+  const [connectivityError, setConnectivityError] = useState<string | null>(null);
   const [batterySaverEnabled, setBatterySaverEnabled] = useState(false);
   const [currentBrightness, setCurrentBrightness] = useState(50);
 
@@ -842,7 +851,7 @@ function App() {
     invoke("change_notch_mode", { mode: notchMode });
   }, [notchMode, windowLabel]);
 
-  const [nectarMode, setNectarMode] = useState<'music' | 'calendar' | 'command-center' | 'status'>('status');
+  const [nectarMode, setNectarMode] = useState<'music' | 'calendar' | 'command-center' | 'connectivity' | 'status'>('status');
   const caldav = useCaldav();
 
   // Window height is now kept constant to prevent rendering layout lag and sharp corners
@@ -854,11 +863,14 @@ function App() {
 
   const handleWheel = (e: React.WheelEvent) => {
     const target = e.target as HTMLElement;
-    if (target.closest('.calendar-grid') || target.closest('.timer-column') || target.closest('.cal-scroll')) {
+    if (target.closest('.calendar-grid') || target.closest('.timer-column') || target.closest('.cal-scroll') || target.closest('.bw-conn-panel')) {
       return;
     }
 
     if (!isHovered) return;
+    // The connectivity panel is opened from the Wi-Fi button and closes on
+    // mouse leave; don't let a stray wheel gesture switch away from it.
+    if (nectarMode === 'connectivity') return;
 
     // Use absolute values to detect horizontal swipe gestures on trackpad
     const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
@@ -1041,9 +1053,10 @@ function App() {
     updateTime();
     const interval = setInterval(updateTime, 1000);
 
-    // Toggle compact timer view every 5 seconds if running
+    // Alternate the clock and a running timer every 5 seconds. A running
+    // stopwatch does not rotate: it owns the notch center until it is paused.
     let timerToggleInterval: any;
-    if ((isTimerRunning || stopwatch.running) && nectarMode !== 'calendar') {
+    if (isTimerRunning && nectarMode !== 'calendar') {
       timerToggleInterval = setInterval(() => {
         setIsCompactTimerVisible(prev => !prev);
       }, 5000);
@@ -1106,6 +1119,101 @@ function App() {
       return false;
     }
   }, []);
+
+  const scanWifiNetworks = useCallback(async () => {
+    setWifiScanning(true);
+    setConnectivityError(null);
+    try {
+      const result = await invoke<WifiScanResult>("scan_wifi_networks");
+      setWifiNetworks(result.networks);
+      setWifiLocationRequired(result.location_required);
+    } catch (error) {
+      setConnectivityError(
+        typeof error === "string"
+          ? error
+          : error instanceof Error
+            ? error.message
+            : "Could not scan for Wi-Fi networks"
+      );
+    } finally {
+      setWifiScanning(false);
+    }
+  }, []);
+
+  const loadBluetoothDevices = useCallback(async () => {
+    setBluetoothDevicesLoading(true);
+    try {
+      setBluetoothDevices(await invoke<BluetoothDeviceInfo[]>("get_bluetooth_devices"));
+    } catch (error) {
+      // The toggle and Windows Settings shortcut still work if enumeration fails.
+      console.error("Failed to enumerate Bluetooth devices:", error);
+    } finally {
+      setBluetoothDevicesLoading(false);
+    }
+  }, []);
+
+  const openConnectivity = useCallback(() => {
+    setConnectivityError(null);
+    setNectarMode((previous) => (previous === "connectivity" ? "status" : "connectivity"));
+  }, []);
+
+  const connectToWifiNetwork = useCallback(
+    async (network: WifiNetwork, password?: string) => {
+      setWifiConnecting(network.ssid);
+      setConnectivityError(null);
+      try {
+        await invoke("connect_wifi", { ssid: network.ssid, password: password ?? null });
+        await refreshWifiStatus();
+        await scanWifiNetworks();
+      } catch (error) {
+        setConnectivityError(
+          typeof error === "string"
+            ? error
+            : error instanceof Error
+              ? error.message
+              : "Could not connect to that network"
+        );
+      } finally {
+        setWifiConnecting(null);
+      }
+    },
+    [refreshWifiStatus, scanWifiNetworks]
+  );
+
+  const disconnectWifi = useCallback(async () => {
+    setConnectivityError(null);
+    try {
+      await invoke("disconnect_wifi");
+      await refreshWifiStatus();
+      await scanWifiNetworks();
+    } catch (error) {
+      setConnectivityError(
+        typeof error === "string"
+          ? error
+          : error instanceof Error
+            ? error.message
+            : "Could not disconnect Wi-Fi"
+      );
+    }
+  }, [refreshWifiStatus, scanWifiNetworks]);
+
+  const openLocationSettings = useCallback(() => {
+    invoke("open_location_settings").catch(() => {});
+  }, []);
+
+  // Fetch Wi-Fi/Bluetooth state when the connectivity panel opens, then keep
+  // the connection indicators fresh while it stays open.
+  useEffect(() => {
+    if (nectarMode !== "connectivity") return;
+    void refreshWifiStatus();
+    void scanWifiNetworks();
+    void loadBluetoothDevices();
+    const interval = setInterval(() => {
+      void refreshWifiStatus();
+      void loadBluetoothDevices();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [nectarMode, refreshWifiStatus, scanWifiNetworks, loadBluetoothDevices]);
 
   // Seed the Wi-Fi pill. The first call can fail while the WLAN service is starting, so retry.
   useEffect(() => {
@@ -1295,16 +1403,26 @@ function App() {
   const toggleWifi = useCallback(async () => {
     const previous = wifiStatus;
     const newState = !(previous?.enabled ?? false);
-    setWifiStatus({ enabled: newState, connected: newState ? (previous?.connected ?? false) : false });
+    setWifiStatus({
+      enabled: newState,
+      connected: newState ? (previous?.connected ?? false) : false,
+      ssid: newState ? previous?.ssid : null,
+    });
+    if (!newState) {
+      setWifiNetworks([]);
+      setWifiLocationRequired(false);
+    }
     try {
       await invoke("set_wifi_state", { enabled: newState });
       // The radio and association take a moment to settle.
       setTimeout(() => void refreshWifiStatus(), 800);
+      if (newState) setTimeout(() => void scanWifiNetworks(), 1400);
     } catch (e) {
       setWifiStatus(previous);
+      setConnectivityError("Could not change the Wi-Fi radio state");
       console.error("Failed to toggle WiFi:", e);
     }
-  }, [wifiStatus, refreshWifiStatus]);
+  }, [wifiStatus, refreshWifiStatus, scanWifiNetworks]);
 
   // Bluetooth toggle
   const toggleBluetooth = useCallback(async () => {
@@ -1312,11 +1430,13 @@ function App() {
     setBluetoothEnabled(newState);
     try {
       await invoke("set_bluetooth_state", { enabled: newState });
+      if (newState) setTimeout(() => void loadBluetoothDevices(), 800);
     } catch (e) {
       setBluetoothEnabled(!newState);
+      setConnectivityError("Could not change the Bluetooth radio state");
       console.error("Failed to toggle Bluetooth:", e);
     }
-  }, [bluetoothEnabled]);
+  }, [bluetoothEnabled, loadBluetoothDevices]);
 
   // Battery Saver - opens settings (no public API to toggle without admin)
   const openBatterySaverSettings = useCallback(async () => {
@@ -1387,7 +1507,7 @@ function App() {
 
   const toggleCalendarMode = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (isTimerFinished) {
+    if (isTimerFinished && !stopwatch.running) {
       resetTimer();
       return;
     }
@@ -1466,6 +1586,7 @@ function App() {
   // Calculate width dynamically based on enabled features
   const getDynamicWidth = () => {
     if (isCalendarMode) return settingsCalendarEnabled && showClockColumn ? 480 : settingsCalendarEnabled ? 310 : 270;
+    if (nectarMode === 'connectivity') return isHovered ? 390 : 140;
     if (nectarMode === 'command-center' && isHovered) {
       const totalWidgets = statusWidgets.left.length + statusWidgets.right.length;
       return Math.max(350, Math.min(200 + totalWidgets * 65, 460));
@@ -1496,6 +1617,7 @@ function App() {
       return isImpacted ? 28.9 : 44.2;
     }
     if (nectarMode === 'calendar') return settingsCalendarEnabled ? (caldav.connected ? 350 : 310) : 262;
+    if (nectarMode === 'connectivity') return isHovered ? 416 : 36;
     if (nectarMode === 'command-center') return isHovered ? 230 : 36;
     if (nectarMode === 'status') return 36;
     if (isMusicMode && isHovered) {
@@ -1577,7 +1699,7 @@ function App() {
           const targetMode = mediaInfo.has_media && isPlaying && settingsMusicCompactNotch ? 'music' : 'status';
           if (nectarMode === 'music') {
             setNectarMode(targetMode);
-          } else if (nectarMode === 'command-center' || nectarMode === 'calendar' || nectarMode === 'status') {
+          } else if (nectarMode === 'command-center' || nectarMode === 'connectivity' || nectarMode === 'calendar' || nectarMode === 'status') {
             setNectarMode(targetMode);
           }
         }}
@@ -1899,7 +2021,19 @@ function App() {
                             <div className="time-center">
                               <div className="time-flip-container" onClick={toggleCalendarMode}>
                                 <AnimatePresence initial={false}>
-                                  {isCompactTimerVisible || isTimerFinished ? (
+                                  {stopwatch.running ? (
+                                    <motion.span
+                                      key="stopwatch"
+                                      className="time compact-timer compact-stopwatch"
+                                      initial={{ rotateX: -90, opacity: 0 }}
+                                      animate={{ rotateX: 0, opacity: 1 }}
+                                      exit={{ rotateX: 90, opacity: 0 }}
+                                      transition={{ type: "spring", stiffness: 600, damping: 30 }}
+                                    >
+                                      <StopwatchCompactIcon />
+                                      <StopwatchReadout base={stopwatch.base} startedAt={stopwatch.startedAt} precise={false} />
+                                    </motion.span>
+                                  ) : isCompactTimerVisible || isTimerFinished ? (
                                     <motion.span
                                       key="timer"
                                       className={`time compact-timer ${isTimerFinished ? 'timer-finished' : ''}`}
@@ -1908,9 +2042,7 @@ function App() {
                                       exit={{ rotateX: 90, opacity: 0 }}
                                       transition={{ type: "spring", stiffness: 600, damping: 30 }}
                                     >
-                                      {isTimerRunning || isTimerFinished
-                                        ? formatTimerTime(timerSeconds)
-                                        : <StopwatchReadout base={stopwatch.base} startedAt={stopwatch.startedAt} precise={false} />}
+                                      {formatTimerTime(timerSeconds)}
                                     </motion.span>
                                   ) : (
                                     <motion.span
@@ -1930,6 +2062,29 @@ function App() {
 
                             {/* Right: album art (music) or battery (command-center, calendar) */}
                             <div className="side-content right">
+                              {!isMusicMode && (
+                                <button
+                                  type="button"
+                                  className={`bw-notch-wifi ${wifiEnabled ? "enabled" : ""} ${wifiConnected ? "connected" : ""}`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openConnectivity();
+                                  }}
+                                  onContextMenu={handleWifiRightClick}
+                                  data-tooltip={
+                                    wifiStatus === null
+                                      ? "Wi-Fi"
+                                      : wifiStatus.ssid
+                                        ? `Wi-Fi — ${wifiStatus.ssid}`
+                                        : wifiEnabled
+                                          ? "Wi-Fi — not connected"
+                                          : "Wi-Fi off"
+                                  }
+                                  aria-label="Open Wi-Fi and Bluetooth"
+                                >
+                                  <WifiIcon enabled={wifiEnabled} connected={wifiConnected} />
+                                </button>
+                              )}
                               {isMusicMode && settingsAlbumArtEnabled ? (
                                 <AnimatePresence mode="wait">
                                   <motion.div
@@ -2185,6 +2340,41 @@ function App() {
                 )}
               </AnimatePresence>
 
+              {/* Connectivity Panel */}
+              <AnimatePresence>
+                {nectarMode === 'connectivity' && (
+                  <motion.div
+                    className="connectivity-content"
+                    onClick={e => e.stopPropagation()}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0, filter: "blur(4px)", transition: { duration: 0.1 } }}
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  >
+                    <ConnectivityPanel
+                      wifi={wifiStatus}
+                      networks={wifiNetworks}
+                      scanning={wifiScanning}
+                      connectingSsid={wifiConnecting}
+                      locationRequired={wifiLocationRequired}
+                      bluetoothEnabled={bluetoothEnabled}
+                      bluetoothDevices={bluetoothDevices}
+                      bluetoothLoading={bluetoothDevicesLoading}
+                      error={connectivityError}
+                      onToggleWifi={toggleWifi}
+                      onToggleBluetooth={toggleBluetooth}
+                      onRefresh={scanWifiNetworks}
+                      onConnect={connectToWifiNetwork}
+                      onDisconnect={disconnectWifi}
+                      onOpenLocationSettings={openLocationSettings}
+                      onOpenBluetoothSettings={() => {
+                        invoke("open_bluetooth_settings").catch(() => {});
+                      }}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               {/* Calendar & Timer Split View */}
               <AnimatePresence>
                 {productivityEnabled && isCalendarMode && (
@@ -2228,6 +2418,28 @@ function App() {
     </div>
 
     </div>
+  );
+}
+
+function StopwatchCompactIcon() {
+  return (
+    <svg
+      className="compact-stopwatch-icon"
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="13.5" r="7.5" />
+      <path d="M12 10v4l2.4 2.4" />
+      <path d="M9 2.5h6" />
+      <path d="M12 2.5v3" />
+    </svg>
   );
 }
 
